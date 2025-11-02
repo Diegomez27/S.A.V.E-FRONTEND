@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Definitiva: Proyecto S.A.V.E. 2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Tech Blueprint -->
+    <!-- Application Structure Plan: Guía de proyecto interactiva y definitiva que consolida todas las características de S.A.V.E. 2.0 (Login, Gestión NFC) y la arquitectura final (NestJS, Docker, PostgreSQL, Ionic). La estructura sigue 5 fases lógicas, desde la planificación hasta el despliegue, con cada tarea como un acordeón expandible que contiene guías paso a paso, código y diagramas visuales. -->
+    <!-- Visualization & Content Choices: 
+        1. Resumen y Arquitectura: Informar -> Diagrama HTML/CSS estático -> Justificación: Mantiene una visión clara del sistema 2.0.
+        2. Cronograma del Proyecto: Organizar/Cambio -> Gráfico de Gantt (Chart.js) -> Justificación: Visualiza el marco de tiempo del proyecto.
+        3. Fases y Tareas Detalladas: Organizar/Informar/Educar -> Listas interactivas con acordeones (HTML/JS) -> Justificación: El núcleo de la guía, permite al usuario seguir paso a paso la construcción de hardware y software, incluyendo los nuevos flujos de Login y NFC, y la configuración de Docker/PostgreSQL.
+        4. Diagrama de Hardware: Informar/Educar -> Diagrama visual creado con HTML/Tailwind/Imágenes -> Justificación: Proporciona una guía de montaje visual clara e inequívoca.
+        5. Barra de Progreso: Informar/Motivar -> Elemento HTML/JS dinámico -> Justificación: Feedback visual del avance.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        details > summary {
+            list-style: none;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        .task-checkbox:checked + div > label {
+            text-decoration: line-through;
+            color: #64748b;
+        }
+        .code-block {
+            font-family: 'Fira Code', monospace;
+            background-color: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-size: 0.875rem;
+        }
+        .nav-link.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+        .component-image {
+            max-height: 150px;
+            object-fit: contain;
+            margin: auto;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 border-b border-slate-200">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-blue-600">S.A.V.E. 2.0</span>
+                    <span class="hidden sm:block ml-3 text-lg font-medium">Guía Definitiva</span>
+                </div>
+                 <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#overview" class="nav-link text-slate-600 hover:text-blue-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent">Visión General</a>
+                        <a href="#phase-0" class="nav-link text-slate-600 hover:text-blue-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent">Fase 0</a>
+                        <a href="#phase-1" class="nav-link text-slate-600 hover:text-blue-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent">Fase 1</a>
+                        <a href="#phase-2" class="nav-link text-slate-600 hover:text-blue-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent">Fase 2</a>
+                        <a href="#phase-3" class="nav-link text-slate-600 hover:text-blue-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent">Fase 3</a>
+                        <a href="#phase-4" class="nav-link text-slate-600 hover:text-blue-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent">Fase 4</a>
+                        <a href="#phase-5" class="nav-link text-slate-600 hover:text-blue-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent">Fase 5</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="w-full bg-slate-200 h-2">
+            <div id="progressBar" class="bg-blue-600 h-2 transition-all duration-300" style="width: 0%;"></div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <section id="overview" class="scroll-mt-20 mb-16">
+            <h1 class="text-4xl font-bold tracking-tight text-slate-900 mb-4">Plan Definitivo del Proyecto: S.A.V.E. 2.0</h1>
+            <p class="text-lg text-slate-600 mb-8">Un sistema de gestión de acceso inteligente con RFID, autenticación de usuarios y administración de tarjetas a través de NFC. Esta guía consolida todas las decisiones del proyecto, incluyendo la arquitectura profesional con Docker y PostgreSQL.</p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="text-xl font-semibold mb-4 text-slate-900">Arquitectura del Sistema</h3>
+                    <p class="text-sm text-slate-500 mb-6">El sistema se compone de tres partes principales que se comunican para un control de acceso seguro y flexible. Para presentaciones sin internet, la Raspberry Pi puede crear su propia red Wi-Fi local.</p>
+                    <div class="space-y-4">
+                        <div class="text-center p-4 border-2 border-blue-500 rounded-lg bg-blue-50">
+                            <h4 class="font-bold">El Portero (Hardware - ESP32)</h4>
+                            <p class="text-sm">Lee tarjetas RFID y activa la cerradura.</p>
+                        </div>
+                        <div class="text-center text-2xl font-mono text-slate-400">↑ ↓</div>
+                        <div class="text-center p-4 border-2 border-emerald-500 rounded-lg bg-emerald-50">
+                            <h4 class="font-bold">El Cerebro (Backend - RPi 4)</h4>
+                            <p class="text-sm">API NestJS + BD PostgreSQL (en Docker).</p>
+                        </div>
+                        <div class="text-center text-2xl font-mono text-slate-400">↑ ↓</div>
+                        <div class="text-center p-4 border-2 border-purple-500 rounded-lg bg-purple-50">
+                            <h4 class="font-bold">El Control Remoto (Frontend - App)</h4>
+                            <p class="text-sm">Ionic/Angular con Login y Gestión NFC.</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="text-xl font-semibold mb-4 text-slate-900">Cronograma del Proyecto</h3>
+                     <p class="text-sm text-slate-500 mb-6">Visualización de la duración estimada para cada fase del proyecto hasta la fecha de entrega del <strong>3 de noviembre de 2025</strong>.</p>
+                    <div class="chart-container" style="position: relative; height:40vh; width:100%; max-height: 400px; max-width: 600px; margin: auto;">
+                        <canvas id="timelineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <div class="space-y-12" id="task-container">
+            <section id="phase-0" class="scroll-mt-20">
+                <h2 class="text-3xl font-bold mb-6 text-slate-900">Fase 0: Planificación y Entorno</h2>
+                <details class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-4">
+                    <summary class="flex items-center p-4 cursor-pointer">
+                        <input type="checkbox" class="task-checkbox h-6 w-6 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-4">
+                        <div class="w-full">
+                           <label class="font-semibold text-lg">Compra de Materiales</label>
+                           <p class="text-sm text-slate-500">Adquirir todos los componentes necesarios.</p>
+                        </div>
+                    </summary>
+                    <div class="p-6 border-t border-slate-200 bg-slate-50">
+                        <p class="text-sm text-slate-600 mb-4">Componentes de hardware (ESP32, RC522, Relé, Cerradura 12V, Fuente 12V). Usa los términos de búsqueda ya proporcionados.</p>
+                    </div>
+                </details>
+                 <details class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-4">
+                    <summary class="flex items-center p-4 cursor-pointer">
+                        <input type="checkbox" class="task-checkbox h-6 w-6 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-4">
+                        <div class="w-full">
+                           <label class="font-semibold text-lg">Preparar Entornos (Laptop y Pi)</label>
+                           <p class="text-sm text-slate-500">Instalar software clave en ambas máquinas.</p>
+                        </div>
+                    </summary>
+                    <div class="p-6 border-t border-slate-200 bg-slate-50">
+                        <ul class="list-disc list-inside space-y-2 text-slate-700">
+                            <li><strong>En tu Laptop:</strong> Instala Node.js, VS Code, Postman, y Docker Desktop.</li>
+                            <li><strong>En tu Raspberry Pi:</strong> Instala Raspberry Pi OS, Node.js, Docker, Docker Compose y NestJS CLI (`sudo npm install -g @nestjs/cli`).</li>
+                        </ul>
+                    </div>
+                </details>
+            </section>
+            
+            <section id="phase-1" class="scroll-mt-20">
+                <h2 class="text-3xl font-bold mb-6 text-slate-900">Fase 1: Desarrollo del Backend ("El Cerebro")</h2>
+                <details class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-4">
+                    <summary class="flex items-center p-4 cursor-pointer">
+                        <input type="checkbox" class="task-checkbox h-6 w-6 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-4">
+                        <div class="w-full">
+                           <label class="font-semibold text-lg">Configurar Base de Datos (Docker)</label>
+                           <p class="text-sm text-slate-500">Crear el contenedor de PostgreSQL con Docker Compose.</p>
+                        </div>
+                    </summary>
+                     <div class="p-6 border-t border-slate-200 bg-slate-50">
+                        <p>En la raíz de tu proyecto, crea `docker-compose.yml` para definir tu base de datos. Iníciala con `docker-compose up -d`.</p>
+                        <div class="code-block my-2"><pre>version: '3.8'
+services:
+  postgres_db:
+    image: postgres:15-alpine
+    container_name: save_postgres_db
+    restart: always
+    environment:
+      POSTGRES_DB: save_database
+      POSTGRES_USER: save_user
+      POSTGRES_PASSWORD: changeme123
+    ports: ["5432:5432"]
+    volumes: [postgres-data:/var/lib/postgresql/data]
+volumes:
+  postgres-data:</pre></div>
+                    </div>
+                </details>
+                <details class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-4">
+                    <summary class="flex items-center p-4 cursor-pointer">
+                        <input type="checkbox" class="task-checkbox h-6 w-6 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-4">
+                        <div class="w-full">
+                           <label class="font-semibold text-lg">Crear Proyecto NestJS y Conectar DB</label>
+                           <p class="text-sm text-slate-500">Inicializar la API y configurar la conexión a PostgreSQL.</p>
+                        </div>
+                    </summary>
+                     <div class="p-6 border-t border-slate-200 bg-slate-50">
+                         <ol class="list-decimal list-inside space-y-2 text-slate-700">
+                             <li>Ejecuta `nest new save-backend-v2` y elige `npm`.</li>
+                             <li>Entra al directorio: `cd save-backend-v2`.</li>
+                             <li>Instala dependencias: `npm install pg @nestjs/typeorm typeorm @nestjs/passport passport passport-jwt @nestjs/jwt bcrypt class-validator class-transformer`.</li>
+                             <li>Define tus entidades (`User`, `Card`, `AccessLog`) en un archivo como `src/database/entities.ts`.</li>
+                             <li>Configura `src/app.module.ts` para que se conecte a la base de datos PostgreSQL de Docker.</li>
+                         </ol>
+                    </div>
+                </details>
+                <details class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-4">
+                    <summary class="flex items-center p-4 cursor-pointer">
+                        <input type="checkbox" class="task-checkbox h-6 w-6 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-4">
+                        <div class="w-full">
+                           <label class="font-semibold text-lg">Implementar Autenticación (Login)</label>
+                           <p class="text-sm text-slate-500">Crear módulo de Auth, servicio y controlador para Login con JWT.</p>
+                        </div>
+                    </summary>
+                     <div class="p-6 border-t border-slate-200 bg-slate-50">
+                        <ul class="list-disc list-inside space-y-2 text-slate-700">
+                            <li>Genera el módulo: `nest g module auth`.</li>
+                            <li>Implementa `AuthService` con un método `signIn` que valida el usuario y devuelve un token JWT.</li>
+                            <li>Implementa `AuthController` con un endpoint `POST /auth/login`.</li>
+                            <li>Crea `JwtStrategy` y `JwtAuthGuard` para proteger rutas futuras.</li>
+                            <li>Añade un usuario "admin" por defecto en el `onModuleInit` del servicio.</li>
+                        </ul>
+                    </div>
+                </details>
+                <details class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-4">
+                    <summary class="flex items-center p-4 cursor-pointer">
+                        <input type="checkbox" class="task-checkbox h-6 w-6 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-4">
+                        <div class="w-full">
+                           <label class="font-semibold text-lg">Implementar Gestión de Tarjetas (CRUD)</label>
+                           <p class="text-sm text-slate-500">Crear módulo de Cards para gestionar tarjetas RFID.</p>
+                        </div>
+                    </summary>
+                     <div class="p-6 border-t border-slate-200 bg-slate-50">
+                        <ul class="list-disc list-inside space-y-2 text-slate-700">
+                            <li>Genera el módulo: `nest g module cards`.</li>
+                            <li>Implementa `CardsController` con endpoints protegidos por `JwtAuthGuard`.</li>
+                            <li>`GET /cards`: Lista todas las tarjetas.</li>
+                            <li>`POST /cards`: Añade una nueva tarjeta (recibe UID y nombre).</li>
+                            <li>`DELETE /cards/:id`: Elimina una tarjeta.</li>
+                        </ul>
+                    </div>
+                </details>
+                <details class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-4">
+                    <summary class="flex items-center p-4 cursor-pointer">
+                        <input type="checkbox" class="task-checkbox h-6 w-6 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-4">
+                        <div class="w-full">
+                           <label class="font-semibold text-lg">Implementar Módulo de Acceso</label>
+                           <p class="text-sm text-slate-500">Crear endpoints para el hardware y el historial de la app.</p>
+                        </div>
+                    </summary>
+                     <div class="p-6 border-t border-slate-200 bg-slate-50">
+                        <ul class="list-disc list-inside space-y-2 text-slate-700">
+                            <li>Genera el módulo: `nest g module access`.</li>
+                            <li>Crea `POST /access/validate`: Endpoint **público** para el ESP32. Recibe un UID, lo valida contra la BD, registra el evento en `AccessLog` y devuelve `{ authorized: true/false }`.</li>
+                            <li>Crea `GET /access/history`: Endpoint **protegido** por `JwtAuthGuard` para la app. Devuelve los últimos 50 registros de `AccessLog`.</li>
+                            <li>Crea `POST /access/open`: Endpoint **protegido** para la app. Registra la "Apertura Remota" en `AccessLog`.</li>
+                        </ul>
+                    </div>
+                </details>
+            </section>
+            
+            <section id="phase-2" class="scroll-mt-20">
+                <h2 class="text-3xl font-bold mb-6 text-slate-900">Fase 2: Montaje y Programación del Hardware ("El Portero")</h2>
+                 <details class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-4">
+                    <summary class="flex items-center p-4 cursor-pointer">
+                        <input type="checkbox" class="task-checkbox h-6 w-6 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-4">
+                        <div class="w-full">
+                           <label class="font-semibold text-lg">Montaje del Circuito (Guía Visual)</label>
+                           <p class="text-sm text-slate-500">Conectar físicamente ESP32, RC522 y Relé.</p>
+                        </div>
+                    </summary>
+                     <div class="p-6 border-t border-slate-200 bg-slate-50 space-y-8">
+                        <div>
+                            <h4 class="text-lg font-semibold mb-4">1. Identifica tus Componentes</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                                <div class="bg-white p-4 rounded-lg border">
+                                    <img src="https://placehold.co/300x200/e0f2fe/0c4a6e?text=ESP32" alt="ESP32 Dev Board" class="component-image mb-2">
+                                    <h5 class="font-bold">ESP32</h5>
+                                </div>
+                                <div class="bg-white p-4 rounded-lg border">
+                                    <img src="https://placehold.co/300x200/dcfce7/14532d?text=RC522" alt="RC522 RFID Reader" class="component-image mb-2">
+                                    <h5 class="font-bold">Lector RFID RC522</h5>
+                                </div>
+                                <div class="bg-white p-4 rounded-lg border">
+                                    <img src="https://placehold.co/300x200/f3e8ff/581c87?text=Relé" alt="5V Relay Module" class="component-image mb-2">
+                                    <h5 class="font-bold">Módulo de Relé</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold mb-4">2. Diagrama de Conexiones (Control)</h4>
+                            <p class="text-sm text-slate-600 mb-4">Sigue el diagrama visual para conectar los pines de bajo voltaje. Revisa el diagrama detallado en la guía anterior para la tabla de pines exacta.</p>
+                             <div class="bg-white p-4 rounded-lg border-2 border-slate-300">
+                                <div class="font-mono text-xs relative" style="height: 350px;">
+                                    <!-- Components -->
+                                    <div class="absolute p-2 border-2 border-blue-500 bg-blue-50 rounded" style="left: 10%; top: 10%;">
+                                        <p class="font-bold">ESP32</p>
+                                        <p>3V3 <span class="text-red-500 font-bold">•</span></p>
+                                        <p>GND <span class="text-black font-bold">•</span></p>
+                                        <p>VIN <span class="text-red-500 font-bold">•</span></p>
+                                        <p>G22 <span class="text-purple-500 font-bold">•</span></p>
+                                        <p>... (pines SPI) ...</p>
+                                    </div>
+                                     <div class="absolute p-2 border-2 border-emerald-500 bg-emerald-50 rounded" style="left: 70%; top: 0%;">
+                                        <p class="font-bold">RC522</p>
+                                        <p><span class="text-red-500 font-bold">•</span> 3.3V</p>
+                                        <p><span class="text-black font-bold">•</span> GND</p>
+                                        <p>... (pines SPI) ...</p>
+                                     </div>
+                                     <div class="absolute p-2 border-2 border-purple-500 bg-purple-50 rounded" style="left: 70%; top: 65%;">
+                                        <p class="font-bold">Relé</p>
+                                        <p><span class="text-red-500 font-bold">•</span> VCC</p>
+                                        <p><span class="text-black font-bold">•</span> GND</p>
+                                        <p><span class="text-purple-500 font-bold">•</span> IN</p>
+                                     </div>
+                                     <!-- Wires -->
+                                    <svg class="absolute w-full h-full top-0 left-0" viewbox="0 0 400 350"><path d="M 110 52 L 280 18" stroke="#ef4444" stroke-width="2" fill="none" stroke-dasharray="4 2"/><path d="M 110 68 L 280 34" stroke="#000000" stroke-width="2" fill="none" stroke-dasharray="4 2"/><path d="M 110 84 L 280 238" stroke="#ef4444" stroke-width="2" fill="none" stroke-dasharray="4 2"/><path d="M 110 68 L 280 254" stroke="#000000" stroke-width="2" fill="none" stroke-dasharray="4 2"/><path d="M 110 84 L 280 270" stroke="#a855f7" stroke-width="2" fill="none" stroke-dasharray="4 2"/></svg>
+                                </div>
+                             </div>
+                        </div>
+                         <div>
+                             <h4 class="text-lg font-semibold mb-4">3. Diagrama del Circuito de Potencia (12V)</h4>
+                             <p class="text-sm text-slate-600 mb-4"><strong>¡CRÍTICO!</strong> Este circuito es independiente. Sigue exactamente este flujo para no dañar tu ESP32.</p>
+                             <div class="bg-white p-6 rounded-lg border-2 border-red-400">
+                                 <p class="text-center text-slate-700">Fuente 12V (+) → Relé (Pin COM) → Relé (Pin NO) → Cerradura (Cable 1) → Cerradura (Cable 2) → Fuente 12V (-)</p>
+                             </div>
+                        </div>
+                    </div>
+                </details>
+                 <details class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-4">
+                    <summary class="flex items-center p-4 cursor-pointer">
+                        <input type="checkbox" class="task-checkbox h-6 w-6 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-4">
+                        <div class="w-full">
+                           <label class="font-semibold text-lg">Programación del ESP32</label>
+                           <p class="text-sm text-slate-500">Escribir el código de Arduino para leer y enviar el UID.</p>
+                        </div>
+                    </summary>
+                     <div class="p-6 border-t border-slate-200 bg-slate-50">
+                         <ol class="list-decimal list-inside space-y-2 text-slate-700">
+                             <li>Usa el IDE de Arduino o PlatformIO.</li>
+                             <li>Instala las librerías: `MFRC522` y `ArduinoJson`.</li>
+                             <li>Conéctate al WiFi (A la red de tu Pi si estás en modo offline).</li>
+                             <li>En el `loop()`, al detectar una tarjeta, lee su UID.</li>
+                             <li>Envía el UID con una petición `HTTP POST` al endpoint `http://<IP_DE_LA_PI>:3000/access/validate`.</li>
+                             <li>Lee la respuesta. Si el JSON dice `{"authorized": true}`, activa el pin del relé por 3 segundos.</li>
+                         </ol>
+                     </div>
+                </details>
+            </section>
+
+            <section id="phase-3" class="scroll-mt-20">
+                <h2 class="text-3xl font-bold mb-6 text-slate-900">Fase 3: Desarrollo del Frontend ("El Control Remoto")</h2>
+                <details class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-4">
+                    <summary class="flex items-center p-4 cursor-pointer">
+                        <input type="checkbox" class="task-checkbox h-6 w-6 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-4">
+                        <div class="w-full">
+                           <label class="font-semibold text-lg">Crear Proyecto Ionic y Vistas</label>
+                           <p class="text-sm text-slate-500">Inicializar la app de Angular e integrar Capacitor.</p>
+                        </div>
+                    </summary>
+                    <div class="p-6 border-t border-slate-200 bg-slate-50">
+                        <ol class="list-decimal list-inside space-y-2 text-slate-700">
+                           <li>Instala Ionic CLI: `npm install -g @ionic/cli`.</li>
+                           <li>Crea el proyecto: `ionic start save-frontend-v2 tabs --type=angular --capacitor`.</li>
+                           <li>Genera las páginas necesarias: `ionic g page pages/login`, `ionic g page pages/card-management`.</li>
+                           <li>Diseña las vistas: una pantalla de Login, y una navegación por tabs para "Historial", "Abrir Puerta" y "Gestionar Tarjetas".</li>
+                        </ol>
+                    </div>
+                </details>
+                <details class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-4">
+                    <summary class="flex items-center p-4 cursor-pointer">
+                        <input type="checkbox" class="task-checkbox h-6 w-6 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-4">
+                        <div class="w-full">
+                           <label class="font-semibold text-lg">Implementar Autenticación y HTTP Interceptor</label>
+                           <p class="text-sm text-slate-500">Crear el servicio de Login y proteger las peticiones.</p>
+                        </div>
+                    </summary>
+                     <div class="p-6 border-t border-slate-200 bg-slate-50">
+                         <ol class="list-decimal list-inside space-y-2 text-slate-700">
+                             <li>Crea un `AuthService` en Angular que llame a `POST /auth/login` del backend.</li>
+                             <li>Al recibir el token, guárdalo en `localStorage` o `Ionic Storage`.</li>
+                             <li>Crea un `HttpInterceptor` que intercepte todas las peticiones HTTP y añada el token JWT en la cabecera `Authorization: Bearer <token>`.</li>
+                             <li>Crea un `AuthGuard` de rutas en Angular para proteger las tabs, redirigiendo al login si el usuario no está autenticado.</li>
+                         </ol>
+                    </div>
+                </details>
+                 <details class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-4">
+                    <summary class="flex items-center p-4 cursor-pointer">
+                        <input type="checkbox" class="task-checkbox h-6 w-6 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-4">
+                        <div class="w-full">
+                           <label class="font-semibold text-lg">Integrar Lectura NFC (Capacitor)</label>
+                           <p class="text-sm text-slate-500">Conectar la app con el lector NFC del teléfono.</p>
+                        </div>
+                    </summary>
+                     <div class="p-6 border-t border-slate-200 bg-slate-50">
+                        <ol class="list-decimal list-inside space-y-2 text-slate-700">
+                             <li>Instala un plugin de NFC para Capacitor (ej. `phonegap-nfc` o uno más moderno como `capacitor-nfc`).</li>
+                             <li>En la página "Gestionar Tarjetas", añade un botón "Escanear Nueva Tarjeta".</li>
+                             <li>Este botón llamará a la función del plugin NFC para que escuche una tarjeta.</li>
+                             <li>Al detectar el UID, muestra un popup pidiendo un nombre para la tarjeta.</li>
+                             <li>Envía el UID y el nombre al backend con una llamada a `POST /cards`.</li>
+                             <li>Muestra la lista de tarjetas registradas llamando a `GET /cards`.</li>
+                         </ol>
+                    </div>
+                </details>
+            </section>
+            
+            <section id="phase-4" class="scroll-mt-20">
+                <h2 class="text-3xl font-bold mb-6 text-slate-900">Fase 4: Integración y Pruebas</h2>
+                 <details class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-4">
+                    <summary class="flex items-center p-4 cursor-pointer">
+                        <input type="checkbox" class="task-checkbox h-6 w-6 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-4">
+                        <div class="w-full">
+                           <label class="font-semibold text-lg">Prueba de Flujo de Gestión (NFC)</label>
+                           <p class="text-sm text-slate-500">Verificar el ciclo de vida completo de una tarjeta.</p>
+                        </div>
+                    </summary>
+                    <div class="p-6 border-t border-slate-200 bg-slate-50">
+                        <h4 class="font-semibold mb-2">Ciclo de Prueba:</h4>
+                         <ol class="list-decimal list-inside space-y-2 text-slate-700">
+                            <li>Inicia sesión en la app.</li>
+                            <li>Escanear una tarjeta nueva con el NFC del teléfono y registrarla.</li>
+                             <li>Verificar que la tarjeta aparece en la lista de la app.</li>
+                             <li>Acercar esa misma tarjeta al lector RFID del hardware. **Resultado:** La puerta debe abrirse.</li>
+                             <li>Eliminar la tarjeta desde la app.</li>
+                             <li>Acercar la misma tarjeta al lector RFID. **Resultado:** La puerta NO debe abrirse y el log debe decir "Acceso Denegado".</li>
+                         </ol>
+                    </div>
+                </details>
+            </section>
+            
+            <section id="phase-5" class="scroll-mt-20">
+                <h2 class="text-3xl font-bold mb-6 text-slate-900">Fase 5: Despliegue y Finalización</h2>
+                 <details class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-4">
+                    <summary class="flex items-center p-4 cursor-pointer">
+                        <input type="checkbox" class="task-checkbox h-6 w-6 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-4">
+                        <div class="w-full">
+                           <label class="font-semibold text-lg">Despliegue Final en Raspberry Pi</label>
+                           <p class="text-sm text-slate-500">Poner el sistema en modo de producción.</p>
+                        </div>
+                    </summary>
+                    <div class="p-6 border-t border-slate-200 bg-slate-50">
+                         <ol class="list-decimal list-inside space-y-2 text-slate-700">
+                            <li>Transfiere tu proyecto backend (sin `node_modules`) a la Pi.</li>
+                            <li>En la Pi, ejecuta `npm install`.</li>
+                            <li>Inicia la base de datos: `docker-compose up -d`.</li>
+                            <li>Compila la API: `npm run build`.</li>
+                            <li>Inicia la API con PM2: `pm2 start dist/main.js --name save-api`.</li>
+                         </ol>
+                    </div>
+                </details>
+                <details class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-4">
+                    <summary class="flex items-center p-4 cursor-pointer">
+                        <input type="checkbox" class="task-checkbox h-6 w-6 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-4">
+                        <div class="w-full">
+                           <label class="font-semibold text-lg">Configurar Modo de Presentación Offline (Hotspot)</label>
+                           <p class="text-sm text-slate-500">Crear una red Wi-Fi local en la Pi para operar sin internet.</p>
+                        </div>
+                    </summary>
+                    <div class="p-6 border-t border-slate-200 bg-slate-50">
+                        <p>Sigue los pasos de la guía anterior para instalar y configurar `hostapd` y `dnsmasq`. Esto hará que tu Pi cree su propia red Wi-Fi. Recuerda conectar el ESP32 y tu teléfono a esta nueva red.</p>
+                    </div>
+                </details>
+            </section>
+        </div>
+    </main>
+    
+    <footer class="bg-white border-t border-slate-200 mt-16">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-500">
+            <p>&copy; 2025 Plan de Proyecto S.A.V.E. 2.0. Guía Interactiva Definitiva.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Chart.js Timeline
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            const today = new Date('2025-10-14');
+            const deadline = new Date('2025-11-03');
+            const dayDiff = (date1, date2) => Math.ceil(Math.abs(date1 - date2) / (1000 * 60 * 60 * 24));
+
+            const phases = [
+                { name: 'Fase 0: Planificación', start: new Date('2025-10-14'), duration: 2 },
+                { name: 'Fase 1: Backend', start: new Date('2025-10-16'), duration: 6 },
+                { name: 'Fase 2: Hardware', start: new Date('2025-10-18'), duration: 3 },
+                { name: 'Fase 3: Frontend', start: new Date('2025-10-22'), duration: 6 },
+                { name: 'Fase 4: Integración', start: new Date('2025-10-28'), duration: 3 },
+                { name: 'Fase 5: Despliegue', start: new Date('2025-10-31'), duration: 2 },
+            ];
+
+             const timelineChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: phases.map(p => p.name),
+                    datasets: [{
+                        label: 'Duración (días)',
+                        data: phases.map(p => [dayDiff(today, p.start), dayDiff(today, p.start) + p.duration]),
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1, barPercentage: 0.6, categoryPercentage: 0.7, borderSkipped: false,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { min: 0, max: dayDiff(today, deadline) + 1, title: { display: true, text: `Días desde el inicio (14 de Oct)` } } }
+                }
+            });
+
+            // Checklist and Progress Bar Logic
+            const taskCheckboxes = document.querySelectorAll('.task-checkbox');
+            const progressBar = document.getElementById('progressBar');
+            const totalTasks = taskCheckboxes.length;
+
+            function updateProgress() {
+                const checkedTasks = document.querySelectorAll('.task-checkbox:checked').length;
+                const progressPercentage = totalTasks > 0 ? (checkedTasks / totalTasks) * 100 : 0;
+                progressBar.style.width = `${progressPercentage}%`;
+            }
+
+            taskCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateProgress);
+            });
+            updateProgress();
+        });
+    </script>
+</body>
+</html>

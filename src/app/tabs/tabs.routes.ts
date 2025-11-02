@@ -1,36 +1,41 @@
 import { Routes } from '@angular/router';
 import { TabsPage } from './tabs.page';
+import { AuthGuard } from '../guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: 'tabs',
     component: TabsPage,
+    canActivate: [AuthGuard],
     children: [
       {
-        path: 'tab1',
+        path: 'historial',
         loadComponent: () =>
-          import('../tab1/tab1.page').then((m) => m.Tab1Page),
+          import('../historial/historial.page').then((m) => m.HistorialPage),
+        canActivate: [AuthGuard]
       },
       {
-        path: 'tab2',
+        path: 'abrir',
         loadComponent: () =>
-          import('../tab2/tab2.page').then((m) => m.Tab2Page),
+          import('../abrir/tab2.page').then((m) => m.Tab2Page),
+        canActivate: [AuthGuard]
       },
       {
-        path: 'tab3',
+        path: 'tarjetas',
         loadComponent: () =>
-          import('../tab3/tab3.page').then((m) => m.Tab3Page),
+          import('../tarjetas/tab3.page').then((m) => m.Tab3Page),
+        canActivate: [AuthGuard]
       },
       {
         path: '',
-        redirectTo: '/tabs/tab1',
+        redirectTo: '/tabs/historial',
         pathMatch: 'full',
       },
     ],
   },
   {
     path: '',
-    redirectTo: '/tabs/tab1',
+    redirectTo: '/tabs/historial',
     pathMatch: 'full',
   },
 ];
