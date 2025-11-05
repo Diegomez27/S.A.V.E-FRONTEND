@@ -211,7 +211,7 @@ PORT=3001
 DB_HOST=localhost
 DB_PORT=5434
 DB_USERNAME=postgres
-DB_PASSWORD=KangSeulgi27?
+DB_PASSWORD
 DB_DATABASE=SaveDB
 JWT_SECRET=tu_clave_secreta_jwt
 ```
@@ -224,38 +224,6 @@ npm run build
 # Ejecutar en producción
 npm run start:prod
 ```
-
-## 📱 Próximos Pasos
-
-### Hardware (Fase 2):
-- [ ] Montaje del circuito ESP32 + RC522 + Relé
-- [ ] Programación del ESP32 para comunicación con API
-- [ ] Integración con cerradura física
-
-### App Móvil (Fase 3):
-- [ ] Desarrollo con Ionic + Angular
-- [ ] Integración NFC para lectura de tarjetas
-- [ ] Interfaz de usuario completa
-- [ ] Gestión de tarjetas desde teléfono
-
-### Despliegue (Fase 5):
-- [ ] Configuración en Raspberry Pi
-- [ ] Modo hotspot para funcionamiento offline
-- [ ] Optimizaciones de producción
-
-## 🤝 Contribución
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -am 'Agrega nueva funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
-
-## 📞 Contacto
 
 **Proyecto S.A.V.E. 2.0**
 - **Autor:** Diego Gómez
