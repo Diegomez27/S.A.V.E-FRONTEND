@@ -1,0 +1,186 @@
+// Estados de carga y vacío
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  gap: 16px;
+
+  ion-spinner {
+    transform: scale(1.5);
+  }
+
+  ion-text {
+    text-align: center;
+    color: var(--ion-color-medium);
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  padding: 20px;
+  gap: 16px;
+
+  ion-icon {
+    font-size: 80px;
+  }
+
+  ion-text {
+    text-align: center;
+
+    h3 {
+      margin: 8px 0;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0;
+      line-height: 1.4;
+    }
+  }
+}
+
+// Tarjetas en la lista
+ion-item {
+  --inner-padding-end: 16px;
+
+  ion-label {
+    h2 {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    p {
+      font-size: 0.875rem;
+      color: var(--ion-color-medium);
+      margin: 2px 0;
+
+      &:first-of-type {
+        font-family: 'Courier New', monospace;
+        font-weight: 500;
+      }
+    }
+  }
+
+  ion-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+}
+
+// Modal para agregar tarjeta
+.modal-content {
+  padding: 16px;
+
+  ion-card {
+    margin: 0;
+    box-shadow: none;
+
+    ion-card-header {
+      padding-bottom: 8px;
+
+      ion-card-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1.2rem;
+
+        ion-icon {
+          font-size: 24px;
+        }
+      }
+    }
+
+    ion-card-content {
+      padding-top: 8px;
+
+      p {
+        margin: 8px 0;
+
+        &:first-child {
+          font-family: 'Courier New', monospace;
+          background: var(--ion-color-light);
+          padding: 8px;
+          border-radius: 6px;
+          border-left: 3px solid var(--ion-color-primary);
+        }
+
+        &:nth-child(2) {
+          margin-top: 16px;
+          margin-bottom: 16px;
+          color: var(--ion-color-medium);
+        }
+      }
+
+      ion-item {
+        --background: transparent;
+        --inner-padding-end: 0;
+        --padding-start: 0;
+        margin-bottom: 16px;
+        border: 1px solid var(--ion-color-light-shade);
+        border-radius: 8px;
+      }
+
+      .save-button {
+        margin-top: 16px;
+
+        ion-spinner {
+          width: 18px;
+          height: 18px;
+        }
+      }
+    }
+  }
+}
+
+// FAB personalizado
+ion-fab-button {
+  box-shadow: 0 4px 16px rgba(var(--ion-color-primary-rgb), 0.3);
+
+  &[size="small"] {
+    --size: 48px;
+    box-shadow: 0 2px 8px rgba(var(--ion-color-secondary-rgb), 0.3);
+  }
+
+  ion-spinner {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// Animaciones
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+ion-item-sliding {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .modal-content {
+    padding: 12px;
+  }
+
+  .empty-state {
+    height: 40vh;
+    padding: 16px;
+
+    ion-icon {
+      font-size: 60px;
+    }
+  }
+}

@@ -11,9 +11,4 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () => import('./pages/login/login.page').then( m => m.LoginPage)
   },
-  {
-    path: 'card-management',
-    loadComponent: () => import('./pages/card-management/card-management.page').then( m => m.CardManagementPage),
-    canActivate: [authGuard] // Proteger gestión de tarjetas
-  },
 ];

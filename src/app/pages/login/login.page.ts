@@ -4,13 +4,9 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router } from '@angular/router';
 import {
   IonContent,
-  IonHeader,
-  IonTitle,
-  IonToolbar,
   IonCard,
   IonCardContent,
   IonItem,
-  IonLabel,
   IonInput,
   IonButton,
   IonText,
@@ -28,13 +24,9 @@ import { lockClosed, person } from 'ionicons/icons';
   standalone: true,
   imports: [
     IonContent,
-    IonHeader,
-    IonTitle,
-    IonToolbar,
     IonCard,
     IonCardContent,
     IonItem,
-    IonLabel,
     IonInput,
     IonButton,
     IonText,

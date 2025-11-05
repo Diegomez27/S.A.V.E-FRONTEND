@@ -1,0 +1,129 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Gestión de Tarjetas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Refresher -->
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Mensaje de error -->
+  <ion-card *ngIf="errorMessage" color="danger">
+    <ion-card-content>
+      <ion-text color="light">{{ errorMessage }}</ion-text>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Estado de carga inicial -->
+  <div *ngIf="isLoading && cards.length === 0" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <ion-text>
+      <p>Cargando tarjetas...</p>
+    </ion-text>
+  </div>
+
+  <!-- Estado vacío -->
+  <div *ngIf="!isLoading && cards.length === 0" class="empty-state">
+    <ion-icon name="card" size="large" color="medium"></ion-icon>
+    <ion-text color="medium">
+      <h3>No hay tarjetas registradas</h3>
+      <p>Agrega tu primera tarjeta usando el botón NFC</p>
+    </ion-text>
+  </div>
+
+  <!-- Lista de tarjetas -->
+  <ion-list *ngIf="cards.length > 0">
+    <ion-item-sliding *ngFor="let card of cards; trackBy: trackByCardId">
+      <ion-item>
+        <ion-icon name="card" slot="start" color="primary"></ion-icon>
+        <ion-label>
+          <h2>{{ card.name }}</h2>
+          <p>UID: {{ card.uid }}</p>
+          <p>Registrada: {{ formatDate(card.createdAt) }}</p>
+        </ion-label>
+        <ion-badge
+          slot="end"
+          [color]="card.isActive ? 'success' : 'danger'">
+          {{ card.isActive ? 'Activa' : 'Inactiva' }}
+        </ion-badge>
+      </ion-item>
+
+      <ion-item-options side="end">
+        <ion-item-option color="danger" (click)="deleteCard(card)">
+          <ion-icon name="trash" slot="icon-only"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+
+  <!-- FAB para agregar tarjetas -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button
+      [disabled]="isNfcScanning"
+      (click)="scanNfcCard()"
+      color="primary">
+      <ion-spinner *ngIf="isNfcScanning" name="crescent"></ion-spinner>
+      <ion-icon *ngIf="!isNfcScanning" name="phonePortrait"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <!-- Botón para agregar manualmente (solo para desarrollo) -->
+  <ion-fab vertical="bottom" horizontal="start" slot="fixed">
+    <ion-fab-button
+      size="small"
+      color="secondary"
+      (click)="addManualCard()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <!-- Modal para agregar tarjeta -->
+  <ion-modal [isOpen]="isModalOpen" (willDismiss)="closeModal()">
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Agregar Tarjeta</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeModal()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="modal-content">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="checkmarkCircle" color="success"></ion-icon>
+            Tarjeta Detectada
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p><strong>UID:</strong> {{ scannedUid }}</p>
+          <p>Asigna un nombre a esta tarjeta:</p>
+
+          <ion-item>
+            <ion-input
+              [(ngModel)]="newCardName"
+              placeholder="Ej: Tarjeta de Juan"
+              maxlength="50"
+              clearInput="true">
+            </ion-input>
+          </ion-item>
+
+          <ion-button
+            expand="full"
+            (click)="saveCard()"
+            [disabled]="!newCardName.trim() || isAddingCard"
+            class="save-button">
+            <ion-spinner *ngIf="isAddingCard" slot="start" name="crescent"></ion-spinner>
+            {{ isAddingCard ? 'Guardando...' : 'Guardar Tarjeta' }}
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    </ion-content>
+  </ion-modal>
+</ion-content>
