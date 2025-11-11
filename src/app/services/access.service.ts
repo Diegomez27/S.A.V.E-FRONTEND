@@ -1,25 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
 import { Api } from './api.service';
-
-// Interfaz que coincide con la respuesta del backend
-interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  hasMore: boolean;
-}
-
-interface AccessRecordResponse {
-  id: number;
-  cardUId: string;
-  cardName: string;
-  wasAuthorized: boolean;
-  type: 'REMOTE' | 'RFID';
-  timestamp: string;
-}
+import {
+  AccessHistoryResponse,
+  AccessRecordBackend,
+  RemoteOpenResponse
+} from './dto/backend.dto';
 
 // Interfaz que usamos en el frontend
 export interface AccessRecord {
@@ -34,10 +21,21 @@ export interface AccessRecord {
 export interface AccessFilters {
   startDate?: Date;
   endDate?: Date;
-  accessType?: 'REMOTE' | 'RFID';
+  type?: 'REMOTE' | 'RFID';
   search?: string;
   page?: number;
   limit?: number;
+}
+
+// Respuesta paginada para el frontend
+export interface PaginatedAccessHistory {
+  records: AccessRecord[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
 }
 
 @Injectable({
@@ -49,42 +47,50 @@ export class AccessService {
 
   constructor(private api: Api) {}
 
-  getAccessHistory(filters: AccessFilters = {}): Observable<AccessRecord[]> {
+  // ==================== GET ACCESS HISTORY (PAGINADO) ====================
+  getAccessHistory(filters: AccessFilters = {}): Observable<PaginatedAccessHistory> {
     // Construir query params
     const params = new URLSearchParams();
     if (filters.startDate) params.append('startDate', filters.startDate.toISOString());
     if (filters.endDate) params.append('endDate', filters.endDate.toISOString());
-    if (filters.accessType) params.append('type', filters.accessType);
-
+    if (filters.type) params.append('type', filters.type);
     if (filters.search) params.append('search', filters.search);
     if (filters.page) params.append('page', filters.page.toString());
     if (filters.limit) params.append('limit', filters.limit.toString());
 
-    // Solo usar caché cuando no hay filtros activos
-    const cachedData = this.getCachedData();
-    if (cachedData && !filters.page && !filters.startDate && !filters.endDate &&
-        !filters.accessType && !filters.search) {
-      return of(cachedData);
-    }
+    const endpoint = `/access/history${params.toString() ? '?' + params.toString() : ''}`;
 
-    return this.api.get(`/access/history?${params.toString()}`).pipe(
+    return this.api.get(endpoint).pipe(
       map(response => {
-        // Verificar si la respuesta es un array
-        if (!Array.isArray(response)) {
+        // El backend devuelve la estructura paginada completa
+        if (response && typeof response === 'object' && 'data' in response) {
+          // Respuesta paginada
+          const paginatedResponse = response as AccessHistoryResponse;
+          return {
+            records: this.transformAccessRecords(paginatedResponse.data),
+            total: paginatedResponse.total,
+            page: paginatedResponse.page,
+            limit: paginatedResponse.limit,
+            totalPages: paginatedResponse.totalPages,
+            hasNextPage: paginatedResponse.hasNextPage,
+            hasPrevPage: paginatedResponse.hasPrevPage
+          };
+        } else if (Array.isArray(response)) {
+          // Si el backend devuelve array directo (sin paginación)
+          const records = this.transformAccessRecords(response);
+          return {
+            records,
+            total: records.length,
+            page: 1,
+            limit: records.length,
+            totalPages: 1,
+            hasNextPage: false,
+            hasPrevPage: false
+          };
+        } else {
           console.error('Unexpected response format:', response);
-          return [];
+          return this.getEmptyPaginatedResponse();
         }
-
-        const records = this.transformAccessRecords(response)
-        // Ordenar por timestamp descendente (más reciente primero)
-        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-
-        // Si es la primera página y no hay filtros, cachear
-        if ((!filters.page || filters.page === 1) && !filters.search && !filters.startDate && !filters.endDate) {
-          this.cacheData(records);
-        }
-
-        return records;
       }),
       catchError(error => {
         console.error('Error fetching access history:', error);
@@ -92,14 +98,35 @@ export class AccessService {
         const cachedData = this.getCachedData();
         if (cachedData && error.status === 0) {
           console.log('Using cached data due to network error');
-          return of(cachedData);
+          return of({
+            records: cachedData,
+            total: cachedData.length,
+            page: 1,
+            limit: cachedData.length,
+            totalPages: 1,
+            hasNextPage: false,
+            hasPrevPage: false
+          });
         }
-        return of([]);
+        return of(this.getEmptyPaginatedResponse());
       })
     );
   }
 
-  private transformAccessRecords(records: AccessRecordResponse[]): AccessRecord[] {
+  // ==================== REMOTE OPEN ====================
+  openDoorRemotely(): Observable<RemoteOpenResponse> {
+    return this.api.post('/access/open', {}).pipe(
+      map((response: RemoteOpenResponse) => response),
+      catchError(error => {
+        console.error('Error opening door remotely:', error);
+        throw error;
+      })
+    );
+  }
+
+  // ==================== PRIVATE METHODS ====================
+
+  private transformAccessRecords(records: AccessRecordBackend[]): AccessRecord[] {
     return records.map(record => {
       // El timestamp viene en formato "2025-11-01T07:11:00.796Z"
       let timestamp;
@@ -112,13 +139,13 @@ export class AccessService {
 
       return {
         id: record.id,
-        cardId: record.cardUId,
+        cardId: record.cardUid,      // ← FIX: Backend usa cardUid
         cardName: record.cardName,
         accessType: record.type,
         timestamp: timestamp,
         isAuthorized: record.wasAuthorized
       };
-    });
+    }).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()); // Ordenar por fecha desc
   }
 
   private getCachedData(): AccessRecord[] | null {
@@ -131,30 +158,37 @@ export class AccessService {
         localStorage.removeItem(this.CACHE_KEY);
         return null;
       }
-      return data;
+
+      // Convertir timestamps de string a Date
+      return data.map((record: any) => ({
+        ...record,
+        timestamp: new Date(record.timestamp)
+      }));
     } catch {
       return null;
     }
   }
 
   private cacheData(data: AccessRecord[]): void {
-    localStorage.setItem(this.CACHE_KEY, JSON.stringify({
-      data,
-      timestamp: Date.now()
-    }));
+    try {
+      localStorage.setItem(this.CACHE_KEY, JSON.stringify({
+        data,
+        timestamp: Date.now()
+      }));
+    } catch (error) {
+      console.error('Error caching access records:', error);
+    }
   }
 
-  private filterCachedData(records: AccessRecord[], filters: AccessFilters): AccessRecord[] {
-    return records.filter(record => {
-      if (filters.startDate && record.timestamp < filters.startDate) return false;
-      if (filters.endDate && record.timestamp > filters.endDate) return false;
-      if (filters.accessType && record.accessType !== filters.accessType) return false;
-      if (filters.search) {
-        const search = filters.search.toLowerCase();
-        return record.cardName.toLowerCase().includes(search) ||
-               record.cardId.toLowerCase().includes(search);
-      }
-      return true;
-    });
+  private getEmptyPaginatedResponse(): PaginatedAccessHistory {
+    return {
+      records: [],
+      total: 0,
+      page: 1,
+      limit: 20,
+      totalPages: 0,
+      hasNextPage: false,
+      hasPrevPage: false
+    };
   }
 }

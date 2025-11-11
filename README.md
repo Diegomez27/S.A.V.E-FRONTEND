@@ -2,8 +2,7 @@
 
 
 
-# 🚪 S.A.V.E. 2.0 - Sistema de Acceso Vehicular y Entrada
-
+# 🚪 S.A.V.E. 2.0 - Sistema de Acceso y Verificación Electrónica
 Un sistema inteligente de gestión de acceso que combina hardware RFID/NFC con una aplicación móvil para control de puertas y registro de accesos.
 
 ## 📋 Descripción del Proyecto

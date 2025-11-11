@@ -1,110 +1,36 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>Control de Acceso</ion-title>
+  <ion-toolbar color="primary">
+    <ion-title></ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="abrir-content">
-  <div class="container">
-    <!-- Botón principal de apertura -->
-    <ion-card class="main-card">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="lock-closed" *ngIf="!isLoading" color="primary"></ion-icon>
-          <ion-spinner *ngIf="isLoading" name="crescent" color="primary"></ion-spinner>
-          Apertura Remota
-        </ion-card-title>
-      </ion-card-header>
-
-      <ion-card-content>
-        <ion-button
-          expand="full"
-          size="large"
-          color="primary"
-          (click)="abrirPuerta()"
-          [disabled]="isLoading"
-          class="main-button">
-          <ion-icon name="lock-open" slot="start" *ngIf="!isLoading"></ion-icon>
-          <ion-spinner slot="start" *ngIf="isLoading" name="crescent"></ion-spinner>
-          {{ isLoading ? 'Abriendo...' : 'Abrir Puerta' }}
-        </ion-button>
-
-        <!-- Mensaje de feedback -->
-        <div
-          *ngIf="feedbackMessage"
-          class="feedback-message"
-          [ngClass]="'feedback-' + feedbackType">
-          <ion-icon
-            [name]="feedbackType === 'success' ? 'checkmark-circle' : 'alert-circle'">
-          </ion-icon>
-          {{ feedbackMessage }}
-        </div>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Estadísticas de uso -->
-    <ion-card class="stats-card">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="shield" color="secondary"></ion-icon>
-          Estadísticas de Uso
-        </ion-card-title>
-      </ion-card-header>
-
-      <ion-card-content>
-        <div class="stats-grid">
-          <div class="stat-item">
-            <ion-text>
-              <h3>{{ openCount }}</h3>
-              <p>Aperturas totales</p>
-            </ion-text>
-          </div>
-
-          <div class="stat-item">
-            <ion-text>
-              <h3>{{ getTimeSinceLastOpen() }}</h3>
-              <p>Última apertura</p>
-            </ion-text>
-          </div>
-        </div>
-
-        <div class="last-open-info" *ngIf="lastOpenTime">
-          <ion-icon name="time" color="medium"></ion-icon>
-          <ion-text color="medium">
-            {{ lastOpenTime | date:'dd/MM/yyyy HH:mm' }}
-          </ion-text>
-        </div>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Configuración de seguridad -->
-    <ion-card class="security-card">
-      <ion-card-content>
-        <div class="security-toggle">
-          <div class="toggle-info">
-            <ion-text>
-              <h4>Confirmación de Seguridad</h4>
-              <p>Requiere confirmación antes de abrir</p>
-            </ion-text>
-          </div>
-
-          <ion-button
-            fill="clear"
-            (click)="toggleSecurityConfirmation()"
-            [color]="isSecurityConfirmationEnabled ? 'success' : 'medium'">
-            <ion-icon
-              [name]="isSecurityConfirmationEnabled ? 'checkmark-circle' : 'close-circle'"
-              size="large">
-            </ion-icon>
-          </ion-button>
-        </div>
-
-        <ion-badge
-          [color]="isSecurityConfirmationEnabled ? 'success' : 'warning'"
-          class="security-badge">
-          {{ isSecurityConfirmationEnabled ? 'Activada' : 'Desactivada' }}
-        </ion-badge>
-      </ion-card-content>
-    </ion-card>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Header con icono de candado -->
+  <div class="door-header">
+    <div class="lock-icon-container">
+      <ion-icon name="lock-closed-outline" class="lock-icon"></ion-icon>
+    </div>
+    <h1>Control de Acceso</h1>
+    <p>Abre la puerta de forma remota</p>
   </div>
+
+  <!-- Card con botón principal -->
+  <ion-card class="main-card">
+    <ion-card-content>
+      <ion-button
+        expand="block"
+        size="large"
+        (click)="confirmOpenDoor()"
+        [disabled]="isOpening"
+        class="open-button">
+        <ion-icon name="lock-open-outline" slot="start"></ion-icon>
+        {{ isOpening ? 'Abriendo...' : 'Abrir Puerta' }}
+      </ion-button>
+
+      <div class="button-info">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <p>Se solicitará confirmación antes de abrir</p>
+      </div>
+    </ion-card-content>
+  </ion-card>
 </ion-content>

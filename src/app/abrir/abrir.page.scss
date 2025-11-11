@@ -1,248 +1,229 @@
-.abrir-content {
-  --background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+ion-content {
+  --background: #f5f5f5;
 }
 
-.container {
-  padding: 16px;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-// Tarjeta principal
-.main-card {
-  margin-bottom: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  border-radius: 16px;
-
-  ion-card-header {
-    padding-bottom: 8px;
-
-    ion-card-title {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 1.3rem;
-      font-weight: 600;
-      color: var(--ion-color-dark);
-    }
-  }
-
-  ion-card-content {
-    padding-top: 8px;
+ion-header {
+  ion-toolbar {
+    --background: transparent;
+    --border-width: 0;
   }
 }
 
-// Botón principal
-.main-button {
-  --border-radius: 12px;
-  --box-shadow: 0 6px 20px rgba(var(--ion-color-primary-rgb), 0.4);
-  --padding-top: 16px;
-  --padding-bottom: 16px;
+// Header con candado
+.door-header {
+  text-align: center;
+  padding: 60px 20px 40px;
+  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
+  border-radius: 0 0 32px 32px;
+  margin: -16px -16px 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
 
-  font-weight: 600;
-  font-size: 1.1rem;
-  margin-bottom: 16px;
-
-  &:hover:not(.button-disabled) {
-    --box-shadow: 0 8px 25px rgba(var(--ion-color-primary-rgb), 0.5);
-    transform: translateY(-2px);
+  // Decoración de fondo
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: pulse 3s ease-in-out infinite;
   }
 
-  transition: all 0.3s ease;
-}
-
-// Mensaje de feedback
-.feedback-message {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  border-radius: 12px;
-  font-weight: 500;
-  margin-top: 8px;
-
-  &.feedback-success {
-    color: var(--ion-color-success);
-    background: var(--ion-color-success-tint);
-    border: 2px solid var(--ion-color-success);
+  .lock-icon-container {
+    position: relative;
+    z-index: 1;
+    margin: 0 auto 24px;
+    width: 120px;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   }
 
-  &.feedback-error {
-    color: var(--ion-color-danger);
-    background: var(--ion-color-danger-tint);
-    border: 2px solid var(--ion-color-danger);
+  .lock-icon {
+    font-size: 64px;
+    color: white;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
   }
 
-  &.feedback-warning {
-    color: var(--ion-color-warning);
-    background: var(--ion-color-warning-tint);
-    border: 2px solid var(--ion-color-warning);
+  h1 {
+    position: relative;
+    z-index: 1;
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 
-  ion-icon {
-    font-size: 20px;
-  }
-}
-
-// Tarjeta de estadísticas
-.stats-card {
-  margin-bottom: 16px;
-  border-radius: 16px;
-
-  ion-card-header {
-    padding-bottom: 8px;
-
-    ion-card-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 1.1rem;
-    }
-  }
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
-
-  .stat-item {
-    text-align: center;
-    padding: 16px;
-    background: var(--ion-color-light);
-    border-radius: 12px;
-
-    h3 {
-      margin: 0 0 4px 0;
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--ion-color-primary);
-    }
-
-    p {
-      margin: 0;
-      font-size: 0.85rem;
-      color: var(--ion-color-medium);
-    }
-  }
-}
-
-.last-open-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: var(--ion-color-light-tint);
-  border-radius: 8px;
-
-  ion-icon {
+  p {
+    position: relative;
+    z-index: 1;
     font-size: 16px;
-  }
-
-  ion-text {
-    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
     font-weight: 500;
   }
 }
 
-// Tarjeta de seguridad
-.security-card {
-  border-radius: 16px;
+// Card principal
+.main-card {
+  margin: 16px;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
 
   ion-card-content {
-    padding: 20px;
+    padding: 32px 24px;
   }
 }
 
-.security-toggle {
+// Botón de apertura
+.open-button {
+  --border-radius: 16px;
+  --box-shadow: 0 8px 24px rgba(var(--ion-color-primary-rgb), 0.3);
+  --padding-top: 20px;
+  --padding-bottom: 20px;
+  --background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
+
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  text-transform: none;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+
+  &:not(.button-disabled):hover {
+    --box-shadow: 0 12px 32px rgba(var(--ion-color-primary-rgb), 0.4);
+    transform: translateY(-2px);
+  }
+
+  &:not(.button-disabled):active {
+    transform: translateY(0);
+  }
+
+  ion-icon {
+    font-size: 28px;
+    margin-right: 8px;
+  }
+}
+
+// Info del botón
+.button-info {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--ion-color-light);
+  border-radius: 12px;
 
-  .toggle-info {
-    flex: 1;
-
-    h4 {
-      margin: 0 0 4px 0;
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--ion-color-dark);
-    }
-
-    p {
-      margin: 0;
-      font-size: 0.85rem;
-      color: var(--ion-color-medium);
-    }
+  ion-icon {
+    font-size: 20px;
+    color: var(--ion-color-primary);
+    flex-shrink: 0;
   }
 
-  ion-button {
-    --padding-start: 8px;
-    --padding-end: 8px;
+  p {
     margin: 0;
+    font-size: 13px;
+    color: var(--ion-color-medium);
+    font-weight: 500;
+    line-height: 1.4;
   }
-}
-
-.security-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 4px 8px;
 }
 
 // Animaciones
-@keyframes bounceIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.3) translateY(20px);
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
   }
   50% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-  70% {
-    transform: scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
+    opacity: 0.6;
+    transform: scale(1.1);
   }
 }
 
-ion-card {
-  animation: bounceIn 0.6s ease-out;
-
-  &:nth-child(2) {
-    animation-delay: 0.1s;
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
   }
-
-  &:nth-child(3) {
-    animation-delay: 0.2s;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
+}
+
+.door-header {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.main-card {
+  animation: fadeInUp 0.7s ease-out;
+  animation-delay: 0.1s;
+  animation-fill-mode: backwards;
 }
 
 // Responsive
-@media (max-width: 768px) {
-  .container {
-    padding: 12px;
-  }
+@media (max-width: 576px) {
+  .door-header {
+    padding: 50px 16px 30px;
 
-  .stats-grid {
-    gap: 12px;
+    .lock-icon-container {
+      width: 100px;
+      height: 100px;
+    }
 
-    .stat-item {
-      padding: 12px;
+    .lock-icon {
+      font-size: 56px;
+    }
 
-      h3 {
-        font-size: 1.3rem;
-      }
+    h1 {
+      font-size: 26px;
+    }
+
+    p {
+      font-size: 14px;
     }
   }
 
-  .main-button {
-    --padding-top: 14px;
-    --padding-bottom: 14px;
-    font-size: 1rem;
+  .main-card {
+    margin: 16px 8px;
+
+    ion-card-content {
+      padding: 24px 16px;
+    }
+  }
+
+  .open-button {
+    --padding-top: 18px;
+    --padding-bottom: 18px;
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 768px) {
+  .door-header {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 24px;
+    margin-top: 20px;
+  }
+
+  .main-card {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
   }
 }

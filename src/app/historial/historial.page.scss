@@ -1,0 +1,147 @@
+// ==================== LOADING STATE ====================
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  gap: 1rem;
+
+  ion-text {
+    color: var(--ion-color-medium);
+  }
+}
+
+// ==================== EMPTY STATE ====================
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  padding: 2rem;
+  text-align: center;
+
+  ion-icon {
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--ion-color-medium);
+    margin: 0.5rem 0;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+    opacity: 0.7;
+  }
+}
+
+// ==================== ERROR CARD ====================
+.error-card {
+  margin: 1rem;
+
+  ion-card-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    ion-icon {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+// ==================== FILTROS TOOLBAR ====================
+ion-toolbar {
+  ion-row {
+    padding: 0.5rem 0;
+  }
+
+  ion-datetime-button {
+    width: 100%;
+  }
+
+  ion-select {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  ion-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+// ==================== LISTA DE ACCESOS ====================
+ion-list {
+  ion-item {
+    --padding-start: 1rem;
+    --padding-end: 1rem;
+    --inner-padding-end: 0;
+
+    ion-label {
+      margin: 0.75rem 0;
+
+      h2 {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+      }
+
+      p {
+        font-size: 0.85rem;
+        color: var(--ion-color-medium);
+        margin: 0.1rem 0;
+      }
+    }
+
+    ion-icon[slot="start"] {
+      font-size: 1.75rem;
+      margin-right: 1rem;
+    }
+
+    ion-badge {
+      font-size: 0.75rem;
+      padding: 0.35rem 0.75rem;
+      font-weight: 600;
+      border-radius: 12px;
+    }
+  }
+}
+
+// ==================== PAGINACIÓN INFO ====================
+.pagination-info {
+  padding: 1rem;
+  background: var(--ion-color-light);
+  border-top: 1px solid var(--ion-color-light-shade);
+
+  small {
+    font-size: 0.75rem;
+  }
+}
+
+// ==================== INFINITE SCROLL ====================
+ion-infinite-scroll-content {
+  --color: var(--ion-color-primary);
+}
+
+// ==================== SEARCHBAR ====================
+ion-searchbar {
+  --background: var(--ion-color-light);
+  --border-radius: 12px;
+  --box-shadow: none;
+  padding: 0.5rem 1rem;
+}
+
+// ==================== RESPONSIVE ====================
+@media (prefers-color-scheme: dark) {
+  .pagination-info {
+    background: var(--ion-color-step-100);
+    border-top-color: var(--ion-color-step-200);
+  }
+}

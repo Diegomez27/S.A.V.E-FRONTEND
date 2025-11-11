@@ -1,0 +1,170 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/perfil"></ion-back-button>
+    </ion-buttons>
+    <ion-title></ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="register-container">
+    <!-- Header con icono -->
+    <div class="header-section">
+      <ion-icon name="person-add-outline" class="header-icon"></ion-icon>
+      <h1>Registrar Usuario</h1>
+    </div>
+
+    <!-- Formulario de Registro -->
+    <ion-card>
+      <ion-card-content>
+        <form>
+          <ion-list lines="none">
+            <!-- Username -->
+            <ion-item class="input-item">
+              <ion-label position="stacked">
+                Nombre de Usuario
+                <span class="required">*</span>
+              </ion-label>
+              <ion-input
+                [(ngModel)]="username"
+                name="username"
+                type="text"
+                (ionInput)="validateUsername()"
+                (ionBlur)="validateUsername()"
+                maxlength="50"
+                [class.input-valid]="usernameValid && formTouched"
+                [class.input-invalid]="!usernameValid && formTouched && username.length > 0"
+              ></ion-input>
+              @if (usernameValid && formTouched) {
+                <ion-icon
+                  name="checkmark-circle-outline"
+                  slot="end"
+                  color="success"
+                  class="validation-icon">
+                </ion-icon>
+              }
+              @if (!usernameValid && formTouched && username.length > 0) {
+                <ion-icon
+                  name="close-circle-outline"
+                  slot="end"
+                  color="danger"
+                  class="validation-icon">
+                </ion-icon>
+              }
+            </ion-item>
+            @if (usernameError && formTouched) {
+              <ion-text color="danger">
+                <p class="error-message">{{ usernameError }}</p>
+              </ion-text>
+            }
+            @if (!usernameError) {
+              <ion-text color="medium">
+                <p class="hint-message">3-50 caracteres. Solo letras, números, guiones y puntos</p>
+              </ion-text>
+            }
+
+            <!-- Password -->
+            <ion-item class="input-item">
+              <ion-label position="stacked">
+                Contraseña
+                <span class="required">*</span>
+              </ion-label>
+              <ion-input
+                [(ngModel)]="password"
+                name="password"
+                [type]="showPassword ? 'text' : 'password'"
+                placeholder="••••••••"
+                (ionInput)="validatePassword()"
+                (ionBlur)="validatePassword()"
+                maxlength="100"
+                [class.input-valid]="passwordValid && formTouched"
+                [class.input-invalid]="!passwordValid && formTouched && password.length > 0"
+              ></ion-input>
+              @if (passwordValid && formTouched) {
+                <ion-icon
+                  name="checkmark-circle-outline"
+                  slot="end"
+                  color="success"
+                  class="validation-icon">
+                </ion-icon>
+              }
+              <ion-icon
+                [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
+                slot="end"
+                (click)="togglePasswordVisibility()"
+                class="eye-icon">
+              </ion-icon>
+            </ion-item>
+            @if (passwordError && formTouched) {
+              <ion-text color="danger">
+                <p class="error-message">{{ passwordError }}</p>
+              </ion-text>
+            }
+            @if (!passwordError) {
+              <ion-text color="medium">
+                <p class="hint-message">Mínimo 6 caracteres</p>
+              </ion-text>
+            }
+
+            <!-- Confirm Password -->
+            <ion-item class="input-item">
+              <ion-label position="stacked">
+                Confirmar Contraseña
+                <span class="required">*</span>
+              </ion-label>
+              <ion-input
+                [(ngModel)]="confirmPassword"
+                name="confirmPassword"
+                [type]="showConfirmPassword ? 'text' : 'password'"
+                placeholder="••••••••"
+                (ionInput)="validateConfirmPassword()"
+                (ionBlur)="validateConfirmPassword()"
+                maxlength="100"
+                [class.input-valid]="passwordsMatch && formTouched"
+                [class.input-invalid]="!passwordsMatch && formTouched && confirmPassword.length > 0"
+              ></ion-input>
+              @if (passwordsMatch && formTouched) {
+                <ion-icon
+                  name="checkmark-circle-outline"
+                  slot="end"
+                  color="success"
+                  class="validation-icon">
+                </ion-icon>
+              }
+              <ion-icon
+                [name]="showConfirmPassword ? 'eye-off-outline' : 'eye-outline'"
+                slot="end"
+                (click)="toggleConfirmPasswordVisibility()"
+                class="eye-icon">
+              </ion-icon>
+            </ion-item>
+            @if (confirmPasswordError && formTouched) {
+              <ion-text color="danger">
+                <p class="error-message">{{ confirmPasswordError }}</p>
+              </ion-text>
+            }
+            @if (passwordsMatch && formTouched) {
+              <ion-text color="success">
+                <p class="success-message">✓ Las contraseñas coinciden</p>
+              </ion-text>
+            }
+          </ion-list>
+
+          <!-- Botones -->
+          <div class="buttons-container">
+            <ion-button
+              expand="block"
+              (click)="registerUser()"
+              [disabled]="!isFormValid()"
+              size="large"
+              class="register-button">
+              <ion-icon name="person-add-outline" slot="start"></ion-icon>
+              Registrar Usuario
+            </ion-button>
+          </div>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

@@ -45,6 +45,24 @@
   }
 }
 
+// ==================== SEGMENT ====================
+ion-segment {
+  padding: 0.5rem;
+
+  ion-segment-button {
+    ion-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    ion-badge {
+      margin-left: 0.25rem;
+      font-size: 0.7rem;
+    }
+  }
+}
+
 // Tarjetas en la lista
 ion-item {
   --inner-padding-end: 16px;
@@ -65,11 +83,68 @@ ion-item {
         font-weight: 500;
       }
     }
+
+    .deleted-date {
+      font-style: italic;
+      color: var(--ion-color-danger);
+    }
   }
 
   ion-badge {
     font-size: 0.75rem;
     font-weight: 600;
+  }
+}
+
+// ==================== VALIDACIÓN UID ====================
+.validation-feedback {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+
+  ion-text {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    ion-icon {
+      font-size: 1rem;
+    }
+
+    small {
+      font-size: 0.75rem;
+    }
+  }
+
+  .char-count {
+    font-size: 0.7rem;
+    opacity: 0.7;
+  }
+}
+
+.hint {
+  display: block;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background: var(--ion-color-light);
+  border-left: 3px solid var(--ion-color-warning);
+  border-radius: 4px;
+
+  p {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    font-size: 0.85rem;
+
+    ion-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
   }
 }
 
@@ -98,24 +173,6 @@ ion-item {
 
     ion-card-content {
       padding-top: 8px;
-
-      p {
-        margin: 8px 0;
-
-        &:first-child {
-          font-family: 'Courier New', monospace;
-          background: var(--ion-color-light);
-          padding: 8px;
-          border-radius: 6px;
-          border-left: 3px solid var(--ion-color-primary);
-        }
-
-        &:nth-child(2) {
-          margin-top: 16px;
-          margin-bottom: 16px;
-          color: var(--ion-color-medium);
-        }
-      }
 
       ion-item {
         --background: transparent;

@@ -23,20 +23,33 @@ import {
   IonCol,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
-  IonLoading
+  IonSpinner,
+  IonText,
+  IonCard,
+  IonCardContent
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   closeCircleOutline,
   calendarOutline,
-  documentOutline
+  documentOutline,
+  checkmarkCircle,
+  closeCircle,
+  cardOutline,
+  phonePortraitOutline
 } from 'ionicons/icons';
 import { DatePipe, NgFor, NgIf } from '@angular/common';
-import { AccessService, AccessRecord, AccessFilters } from '../services/access.service';// Registrar iconos
+import { AccessService, AccessRecord, AccessFilters } from '../services/access.service';
+
+// Registrar iconos
 addIcons({
   closeCircleOutline,
   calendarOutline,
-  documentOutline
+  documentOutline,
+  checkmarkCircle,
+  closeCircle,
+  cardOutline,
+  phonePortraitOutline
 });
 
 @Component({
@@ -67,7 +80,10 @@ addIcons({
     IonCol,
     IonInfiniteScroll,
     IonInfiniteScrollContent,
-    IonLoading,
+    IonSpinner,
+    IonText,
+    IonCard,
+    IonCardContent,
     DatePipe,
     NgFor,
     NgIf
@@ -75,14 +91,24 @@ addIcons({
   standalone: true
 })
 export class HistorialPage implements OnInit {
+  // Data
   accessRecords: AccessRecord[] = [];
-  filteredRecords: AccessRecord[] = [];
+
+  // Filtros
   filters: AccessFilters = {};
   searchTerm: string = '';
-  isLoading: boolean = false;
+
+  // Paginación (metadata del backend)
   currentPage: number = 1;
+  totalPages: number = 0;
+  totalRecords: number = 0;
+  hasNextPage: boolean = false;
+  hasPrevPage: boolean = false;
   itemsPerPage: number = 20;
-  hasMoreData: boolean = true;
+
+  // Estados
+  isLoading: boolean = false;
+  errorMessage: string = '';
 
   constructor(private accessService: AccessService) {}
 
@@ -90,96 +116,173 @@ export class HistorialPage implements OnInit {
     this.loadAccessRecords();
   }
 
+  // ==================== CARGAR REGISTROS ====================
   loadAccessRecords(refresh: boolean = false) {
     if (refresh) {
       this.currentPage = 1;
-      this.hasMoreData = true;
+      this.accessRecords = [];
     }
 
-    if (!this.hasMoreData && !refresh) return;
+    // Si no hay más datos y no es refresh, no hacer nada
+    if (!this.hasNextPage && !refresh && this.currentPage > 1) {
+      return;
+    }
 
     this.isLoading = true;
-    console.log('Loading records with filters:', this.filters);
+    this.errorMessage = '';
 
     const filters: AccessFilters = {
       ...this.filters,
       page: this.currentPage,
       limit: this.itemsPerPage,
-      search: this.searchTerm
+      search: this.searchTerm || undefined
     };
 
+    console.log('🔍 Loading records with filters:', filters);
+
     this.accessService.getAccessHistory(filters).subscribe({
-      next: (records) => {
-        console.log('Records received:', records);
+      next: (response) => {
+        console.log('✅ Response received:', response);
 
-        if (records) {
-          if (refresh) {
-            this.accessRecords = records;
-          } else {
-            this.accessRecords = [...this.accessRecords, ...records];
-          }
-
-          this.hasMoreData = records.length === this.itemsPerPage;
-          this.filterRecords();
-          console.log('Filtered records:', this.filteredRecords);
+        // Usar la metadata del backend
+        if (refresh) {
+          this.accessRecords = response.records;
+        } else {
+          this.accessRecords = [...this.accessRecords, ...response.records];
         }
+
+        // Actualizar metadata de paginación
+        this.totalPages = response.totalPages;
+        this.totalRecords = response.total;
+        this.hasNextPage = response.hasNextPage;
+        this.hasPrevPage = response.hasPrevPage;
+        this.currentPage = response.page;
+
+        console.log(`📊 Metadata: Page ${this.currentPage}/${this.totalPages}, Total: ${this.totalRecords}, HasNext: ${this.hasNextPage}`);
+
+        this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error fetching records:', error);
-      },
-      complete: () => {
+        console.error('❌ Error fetching records:', error);
+        this.errorMessage = this.getErrorMessage(error);
         this.isLoading = false;
-        console.log('Records loading completed');
       }
     });
   }
 
+  // ==================== REFRESH ====================
   async doRefresh(event: any) {
     await this.loadAccessRecords(true);
     event.target.complete();
   }
 
+  // ==================== BÚSQUEDA ====================
   handleSearch(event: any) {
-    this.searchTerm = event.detail.value?.toLowerCase() || '';
+    this.searchTerm = event.detail.value?.trim() || '';
     this.loadAccessRecords(true);
   }
 
+  // ==================== INFINITE SCROLL ====================
   async loadMore(event: any) {
-    if (!this.isLoading && this.hasMoreData) {
-      this.currentPage++;
-      await this.loadAccessRecords();
+    if (this.isLoading || !this.hasNextPage) {
+      event.target.complete();
+      return;
     }
+
+    console.log('📥 Loading more... Current page:', this.currentPage);
+    this.currentPage++;
+    await this.loadAccessRecords(false);
     event.target.complete();
   }
 
-  private filterRecords() {
-    this.filteredRecords = this.accessRecords;
-  }
-
-  // Filtros avanzados
+  // ==================== FILTROS ====================
   handleDateFilter(event: any) {
-    const { startDate, endDate } = event.detail.value;
-    this.filters = {
-      ...this.filters,
-      startDate: startDate ? new Date(startDate) : undefined,
-      endDate: endDate ? new Date(endDate) : undefined
-    };
+    const selectedDate = event.detail.value;
+    if (selectedDate) {
+      const date = new Date(selectedDate);
+      // Establecer rango del día completo
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      this.filters = {
+        ...this.filters,
+        startDate: startOfDay,
+        endDate: endOfDay
+      };
+    } else {
+      this.filters = {
+        ...this.filters,
+        startDate: undefined,
+        endDate: undefined
+      };
+    }
     this.loadAccessRecords(true);
   }
 
   handleTypeFilter(event: any) {
+    const type = event.detail.value;
     this.filters = {
       ...this.filters,
-      accessType: event.detail.value
+      type: type || undefined
     };
     this.loadAccessRecords(true);
   }
-
-
 
   clearFilters() {
     this.filters = {};
     this.searchTerm = '';
     this.loadAccessRecords(true);
+  }
+
+  // ==================== HELPERS ====================
+  getDateFilterLabel(): string {
+    if (this.filters.startDate) {
+      return new Date(this.filters.startDate).toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: 'short'
+      });
+    }
+    return 'Fecha';
+  }
+
+  getTypeFilterLabel(): string {
+    if (this.filters.type === 'RFID') return '🏷️ Tarjeta';
+    if (this.filters.type === 'REMOTE') return '📱 App';
+    return 'Todos';
+  }
+
+  hasActiveFilters(): boolean {
+    return !!(this.filters.startDate || this.filters.endDate || this.filters.type || this.searchTerm);
+  }
+
+  getAccessIcon(record: AccessRecord): string {
+    return record.accessType === 'REMOTE' ? 'phone-portrait-outline' : 'card-outline';
+  }
+
+  getAccessColor(record: AccessRecord): string {
+    return record.isAuthorized ? 'success' : 'danger';
+  }
+
+  getAccessBadgeText(record: AccessRecord): string {
+    if (record.accessType === 'REMOTE') {
+      return record.isAuthorized ? '📱 App' : '❌ App';
+    } else {
+      return record.isAuthorized ? '🏷️ Tarjeta' : '❌ Tarjeta';
+    }
+  }
+
+  private getErrorMessage(error: any): string {
+    if (error.status === 0) return 'Sin conexión al servidor';
+    if (error.status === 401) return 'Sesión expirada';
+    if (error.status === 403) return 'No tienes permisos';
+    return 'Error al cargar el historial';
+  }
+
+  // TrackBy para optimizar ngFor
+  trackByRecordId(index: number, record: AccessRecord): number {
+    return record.id;
   }
 }

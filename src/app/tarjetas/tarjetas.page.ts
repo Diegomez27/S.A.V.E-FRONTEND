@@ -28,6 +28,8 @@ import {
   IonItemSliding,
   IonItemOptions,
   IonItemOption,
+  IonSegment,
+  IonSegmentButton,
   AlertController,
   ToastController
 } from '@ionic/angular/standalone';
@@ -40,7 +42,10 @@ import {
   checkmarkCircle,
   closeCircle,
   refresh,
-  close
+  close,
+  arrowUndo,
+  trashBin,
+  alertCircle
 } from 'ionicons/icons';
 import { CardService, Card, CreateCardRequest } from '../services/card.service';
 import { NfcService } from '../services/nfc.service';
@@ -76,12 +81,21 @@ import { NfcService } from '../services/nfc.service';
     IonItemSliding,
     IonItemOptions,
     IonItemOption,
+    IonSegment,
+    IonSegmentButton,
     CommonModule,
     FormsModule
   ]
 })
 export class TarjetasPage implements OnInit {
-  cards: Card[] = [];
+  // Listas de tarjetas
+  activeCards: Card[] = [];
+  deletedCards: Card[] = [];
+
+  // Vista actual
+  currentView: 'active' | 'deleted' = 'active';
+
+  // Estados
   isLoading = false;
   isNfcScanning = false;
   isAddingCard = false;
@@ -90,6 +104,8 @@ export class TarjetasPage implements OnInit {
   isModalOpen = false;
   newCardName = '';
   scannedUid = '';
+  uidValid = false;
+  uidError = '';
 
   // Estados
   nfcAvailable = false;
@@ -110,7 +126,10 @@ export class TarjetasPage implements OnInit {
       checkmarkCircle,
       closeCircle,
       refresh,
-      close
+      close,
+      arrowUndo,
+      trashBin,
+      alertCircle
     });
 
     this.nfcAvailable = this.nfcService.isAvailable;
@@ -120,14 +139,22 @@ export class TarjetasPage implements OnInit {
     this.loadCards();
   }
 
-  // Cargar tarjetas
+  // ==================== CARGAR TARJETAS ====================
   loadCards(refresh = false) {
+    if (this.currentView === 'active') {
+      this.loadActiveCards(refresh);
+    } else {
+      this.loadDeletedCards(refresh);
+    }
+  }
+
+  loadActiveCards(refresh = false) {
     this.isLoading = true;
     this.errorMessage = '';
 
     this.cardService.getCards(!refresh).subscribe({
       next: (cards) => {
-        this.cards = cards;
+        this.activeCards = cards;
         this.isLoading = false;
       },
       error: (error) => {
@@ -139,10 +166,64 @@ export class TarjetasPage implements OnInit {
     });
   }
 
+  loadDeletedCards(refresh = false) {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.cardService.getDeletedCards().subscribe({
+      next: (cards) => {
+        this.deletedCards = cards;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading deleted cards:', error);
+        this.errorMessage = 'Error al cargar tarjetas eliminadas';
+        this.isLoading = false;
+        this.showToast('Error al cargar tarjetas eliminadas', 'danger');
+      }
+    });
+  }
+
+  // ==================== CAMBIO DE VISTA ====================
+  onViewChange(event: any) {
+    this.currentView = event.detail.value;
+    this.loadCards();
+  }
+
+  get currentCards(): Card[] {
+    return this.currentView === 'active' ? this.activeCards : this.deletedCards;
+  }
+
   // Refrescar tarjetas
   async doRefresh(event: any) {
     await this.loadCards(true);
     event.target.complete();
+  }
+
+  // ==================== VALIDACIÓN DE UID ====================
+  isValidUid(uid: string): boolean {
+    // Cualquier caracter, longitud 1-50
+    const trimmed = uid.trim();
+    return trimmed.length >= 1 && trimmed.length <= 50;
+  }
+
+  validateUidInput(event: any) {
+    const input = event.target.value || '';
+    // Trim y limitar longitud
+    this.scannedUid = input.trim();
+
+    // Validar
+    if (this.scannedUid.length === 0) {
+      this.uidValid = false;
+      this.uidError = '';
+    } else if (this.scannedUid.length > 50) {
+      this.uidValid = false;
+      this.uidError = 'Máximo 50 caracteres';
+      this.scannedUid = this.scannedUid.substring(0, 50);
+    } else {
+      this.uidValid = true;
+      this.uidError = '';
+    }
   }
 
   // Escanear tarjeta NFC
@@ -196,7 +277,7 @@ export class TarjetasPage implements OnInit {
         {
           name: 'uid',
           type: 'text',
-          placeholder: 'UID de la tarjeta (ej: 1A2B3C4D)'
+          placeholder: 'UID (Ej: A3B4C5D6, 1124, CARD-001)'
         },
         {
           name: 'name',
@@ -213,9 +294,16 @@ export class TarjetasPage implements OnInit {
           text: 'Agregar',
           handler: (data) => {
             if (data.uid && data.name) {
-              this.scannedUid = data.uid;
+              this.scannedUid = data.uid.trim();
               this.newCardName = data.name;
-              this.saveCard();
+
+              // Validar antes de guardar
+              if (this.isValidUid(this.scannedUid)) {
+                this.uidValid = true;
+                this.saveCard();
+              } else {
+                this.showToast('UID inválido. Debe tener entre 1 y 50 caracteres', 'warning');
+              }
             }
           }
         }
@@ -240,8 +328,18 @@ export class TarjetasPage implements OnInit {
 
   // Guardar nueva tarjeta
   saveCard() {
-    if (!this.newCardName.trim() || !this.scannedUid) {
-      this.showToast('Por favor completa todos los campos', 'warning');
+    if (!this.newCardName.trim()) {
+      this.showToast('Por favor ingresa un nombre', 'warning');
+      return;
+    }
+
+    if (!this.scannedUid) {
+      this.showToast('Por favor ingresa el UID', 'warning');
+      return;
+    }
+
+    if (!this.uidValid) {
+      this.showToast('UID inválido. Debe tener entre 1 y 50 caracteres', 'warning');
       return;
     }
 
@@ -256,30 +354,28 @@ export class TarjetasPage implements OnInit {
       next: (response) => {
         console.log('Card created successfully:', response);
         this.showToast('Tarjeta agregada correctamente', 'success');
-        this.loadCards(true); // Recargar lista
+        this.loadActiveCards(true); // Recargar lista
         this.closeModal();
         this.isAddingCard = false;
       },
       error: (error) => {
         console.error('Error creating card:', error);
-        console.error('Error details:', {
-          status: error.status,
-          statusText: error.statusText,
-          error: error.error
-        });
 
         let errorMessage = 'Error al agregar la tarjeta';
 
         if (error.status === 409) {
-          errorMessage = 'Esta tarjeta ya está registrada';
+          errorMessage = 'Esta tarjeta ya está registrada (puede estar en papelera)';
         } else if (error.status === 400) {
-          errorMessage = 'Datos de tarjeta inválidos';
+          const msg = error.error?.message;
+          if (Array.isArray(msg)) {
+            errorMessage = msg.join(', ');
+          } else if (msg) {
+            errorMessage = msg;
+          } else {
+            errorMessage = 'UID inválido';
+          }
         } else if (error.status === 0) {
           errorMessage = 'No se puede conectar al servidor';
-        } else if (error.message && error.message.includes('Cannot read properties')) {
-          errorMessage = 'Error en el formato de respuesta del servidor';
-          // Si el error es de formato pero la tarjeta se creó, recargar la lista
-          this.loadCards(true);
         }
 
         this.showToast(errorMessage, 'danger');
@@ -315,12 +411,85 @@ export class TarjetasPage implements OnInit {
   confirmDeleteCard(cardId: number) {
     this.cardService.deleteCard(cardId).subscribe({
       next: (response) => {
-        this.showToast('Tarjeta eliminada correctamente', 'success');
-        this.loadCards(true); // Recargar lista
+        this.showToast('Tarjeta movida a papelera', 'success');
+        this.loadActiveCards(true); // Recargar lista activas
       },
       error: (error) => {
         console.error('Error deleting card:', error);
         this.showToast('Error al eliminar la tarjeta', 'danger');
+      }
+    });
+  }
+
+  // ==================== RESTAURAR TARJETA ====================
+  async restoreCard(card: Card) {
+    const alert = await this.alertController.create({
+      header: 'Restaurar Tarjeta',
+      message: `¿Restaurar la tarjeta "${card.name}"?`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Restaurar',
+          handler: () => {
+            this.confirmRestoreCard(card.id);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  confirmRestoreCard(cardId: number) {
+    this.cardService.restoreCard(cardId).subscribe({
+      next: (response) => {
+        this.showToast('Tarjeta restaurada correctamente', 'success');
+        this.loadDeletedCards(true); // Recargar papelera
+        this.loadActiveCards(true); // Recargar activas
+      },
+      error: (error) => {
+        console.error('Error restoring card:', error);
+        this.showToast('Error al restaurar la tarjeta', 'danger');
+      }
+    });
+  }
+
+  // ==================== ELIMINAR PERMANENTEMENTE ====================
+  async permanentDeleteCard(card: Card) {
+    const alert = await this.alertController.create({
+      header: '⚠️ Eliminar Permanentemente',
+      message: `Esta acción NO SE PUEDE DESHACER.\n\n¿Eliminar "${card.name}" para siempre?`,
+      cssClass: 'danger-alert',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'ELIMINAR',
+          role: 'destructive',
+          handler: () => {
+            this.confirmPermanentDelete(card.id);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  confirmPermanentDelete(cardId: number) {
+    this.cardService.permanentDeleteCard(cardId).subscribe({
+      next: (response) => {
+        this.showToast('Tarjeta eliminada permanentemente', 'warning');
+        this.loadDeletedCards(true); // Recargar papelera
+      },
+      error: (error) => {
+        console.error('Error permanently deleting card:', error);
+        this.showToast('Error al eliminar permanentemente', 'danger');
       }
     });
   }

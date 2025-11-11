@@ -1,41 +1,31 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { map, catchError, tap } from 'rxjs/operators';
 import { Api } from './api.service';
+import {
+  CardResponse,
+  CreateCardRequest as CreateCardRequestDTO,
+  DeleteCardResponse,
+  RestoreCardResponse
+} from './dto/backend.dto';
 
-// Interfaces para las tarjetas
+// Re-exportar para uso externo
+export { CreateCardRequestDTO as CreateCardRequest };
+
+// Interfaces para uso interno del frontend
 export interface Card {
   id: number;
   uid: string;
   name: string;
-  isActive: boolean;
+  isActive: boolean;  // ← Frontend usa isActive
   createdAt: Date;
   updatedAt: Date;
-}
-
-export interface CreateCardRequest {
-  uid: string;
-  name: string;
+  deletedAt: Date | null;
 }
 
 export interface CreateCardResponse {
   message: string;
   card: Card;
-}
-
-export interface DeleteCardResponse {
-  message: string;
-}
-
-// Interface para la respuesta del backend
-interface CardResponse {
-  id: number;
-  uid: string;
-  name: string;
-  isEnabled: boolean;  // El backend usa isEnabled, no isActive
-  createdAt: string;
-  // updatedAt no está presente en la respuesta del backend
 }
 
 @Injectable({
@@ -47,7 +37,7 @@ export class CardService {
 
   constructor(private api: Api) { }
 
-  // Obtener todas las tarjetas
+  // ==================== GET CARDS (ACTIVE) ====================
   getCards(useCache: boolean = true): Observable<Card[]> {
     // Verificar caché primero si está habilitado
     if (useCache) {
@@ -81,14 +71,30 @@ export class CardService {
     );
   }
 
-  // Crear nueva tarjeta
-  createCard(cardData: CreateCardRequest): Observable<CreateCardResponse> {
+  // ==================== GET DELETED CARDS ====================
+  getDeletedCards(): Observable<Card[]> {
+    return this.api.get('/cards/deleted').pipe(
+      map((response: CardResponse[]) => {
+        if (!Array.isArray(response)) {
+          console.error('Unexpected response format for deleted cards:', response);
+          return [];
+        }
+        return this.transformCards(response);
+      }),
+      catchError(error => {
+        console.error('Error fetching deleted cards:', error);
+        return of([]);
+      })
+    );
+  }
+
+  // ==================== CREATE CARD ====================
+  createCard(cardData: CreateCardRequestDTO): Observable<CreateCardResponse> {
     return this.api.post('/cards', cardData).pipe(
-      map((response: any) => {
+      map((response: CardResponse) => {
         // Limpiar caché al agregar nueva tarjeta
         this.clearCache();
 
-        // El backend devuelve directamente la tarjeta
         const transformedCard = this.transformCard(response);
 
         return {
@@ -103,10 +109,10 @@ export class CardService {
     );
   }
 
-  // Eliminar tarjeta
+  // ==================== DELETE CARD (SOFT) ====================
   deleteCard(cardId: number): Observable<DeleteCardResponse> {
     return this.api.delete(`/cards/${cardId}`).pipe(
-      map((response: any) => {
+      map((response: DeleteCardResponse) => {
         // Limpiar caché al eliminar tarjeta
         this.clearCache();
         return {
@@ -120,8 +126,41 @@ export class CardService {
     );
   }
 
-  // Actualizar tarjeta (opcional para futuras funcionalidades)
-  updateCard(cardId: number, cardData: Partial<CreateCardRequest>): Observable<Card> {
+  // ==================== RESTORE CARD ====================
+  restoreCard(cardId: number): Observable<{ message: string; card: Card }> {
+    return this.api.patch(`/cards/${cardId}/restore`, {}).pipe(
+      map((response: RestoreCardResponse) => {
+        this.clearCache();
+        return {
+          message: response.message || 'Tarjeta restaurada correctamente',
+          card: this.transformCard(response.card)
+        };
+      }),
+      catchError(error => {
+        console.error('Error restoring card:', error);
+        throw error;
+      })
+    );
+  }
+
+  // ==================== DELETE CARD (PERMANENT) ====================
+  permanentDeleteCard(cardId: number): Observable<DeleteCardResponse> {
+    return this.api.delete(`/cards/${cardId}/permanent`).pipe(
+      map((response: DeleteCardResponse) => {
+        this.clearCache();
+        return {
+          message: response.message || 'Tarjeta eliminada permanentemente'
+        };
+      }),
+      catchError(error => {
+        console.error('Error permanently deleting card:', error);
+        throw error;
+      })
+    );
+  }
+
+  // ==================== UPDATE CARD ====================
+  updateCard(cardId: number, cardData: Partial<CreateCardRequestDTO>): Observable<Card> {
     return this.api.put(`/cards/${cardId}`, cardData).pipe(
       map((response: CardResponse) => {
         this.clearCache();
@@ -134,14 +173,15 @@ export class CardService {
     );
   }
 
-  // Verificar si un UID ya está registrado
+  // ==================== CHECK IF UID IS REGISTERED ====================
   isUidRegistered(uid: string): Observable<boolean> {
     return this.getCards().pipe(
       map(cards => cards.some(card => card.uid.toLowerCase() === uid.toLowerCase()))
     );
   }
 
-  // Métodos privados para transformación y caché
+  // ==================== PRIVATE METHODS ====================
+
   private transformCards(cardsResponse: CardResponse[]): Card[] {
     return cardsResponse.map(card => this.transformCard(card));
   }
@@ -155,9 +195,10 @@ export class CardService {
       id: cardResponse.id,
       uid: cardResponse.uid,
       name: cardResponse.name,
-      isActive: cardResponse.isEnabled, // Backend usa isEnabled
+      isActive: cardResponse.isEnabled, // ← FIX CRÍTICO: Backend usa isEnabled
       createdAt: new Date(cardResponse.createdAt),
-      updatedAt: new Date(cardResponse.createdAt) // Backend no tiene updatedAt, usar createdAt
+      updatedAt: new Date(cardResponse.createdAt), // Backend no tiene updatedAt
+      deletedAt: cardResponse.deletedAt ? new Date(cardResponse.deletedAt) : null
     };
   }
 
@@ -176,7 +217,8 @@ export class CardService {
       return data.map((card: any) => ({
         ...card,
         createdAt: new Date(card.createdAt),
-        updatedAt: new Date(card.updatedAt)
+        updatedAt: new Date(card.updatedAt),
+        deletedAt: card.deletedAt ? new Date(card.deletedAt) : null
       }));
     } catch (error) {
       console.error('Error parsing cached cards:', error);

@@ -2,6 +2,21 @@
   <ion-toolbar>
     <ion-title>Gestión de Tarjetas</ion-title>
   </ion-toolbar>
+
+  <!-- Segment para alternar vistas -->
+  <ion-toolbar>
+    <ion-segment [(ngModel)]="currentView" (ionChange)="onViewChange($event)" value="active">
+      <ion-segment-button value="active">
+        <ion-label>Activas</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="deleted">
+        <ion-label>Papelera</ion-label>
+        <ion-badge *ngIf="deletedCards.length > 0" color="danger">
+          {{ deletedCards.length }}
+        </ion-badge>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
@@ -18,7 +33,7 @@
   </ion-card>
 
   <!-- Estado de carga inicial -->
-  <div *ngIf="isLoading && cards.length === 0" class="loading-container">
+  <div *ngIf="isLoading && currentCards.length === 0" class="loading-container">
     <ion-spinner name="crescent"></ion-spinner>
     <ion-text>
       <p>Cargando tarjetas...</p>
@@ -26,17 +41,19 @@
   </div>
 
   <!-- Estado vacío -->
-  <div *ngIf="!isLoading && cards.length === 0" class="empty-state">
+  <div *ngIf="!isLoading && currentCards.length === 0" class="empty-state">
     <ion-icon name="card" size="large" color="medium"></ion-icon>
     <ion-text color="medium">
-      <h3>No hay tarjetas registradas</h3>
-      <p>Agrega tu primera tarjeta usando el botón NFC</p>
+      <h3 *ngIf="currentView === 'active'">No hay tarjetas registradas</h3>
+      <h3 *ngIf="currentView === 'deleted'">No hay tarjetas eliminadas</h3>
+      <p *ngIf="currentView === 'active'">Agrega tu primera tarjeta usando el botón NFC</p>
+      <p *ngIf="currentView === 'deleted'">Las tarjetas eliminadas aparecerán aquí</p>
     </ion-text>
   </div>
 
-  <!-- Lista de tarjetas -->
-  <ion-list *ngIf="cards.length > 0">
-    <ion-item-sliding *ngFor="let card of cards; trackBy: trackByCardId">
+  <!-- Lista de tarjetas ACTIVAS -->
+  <ion-list *ngIf="currentView === 'active' && activeCards.length > 0">
+    <ion-item-sliding *ngFor="let card of activeCards; trackBy: trackByCardId">
       <ion-item>
         <ion-icon name="card" slot="start" color="primary"></ion-icon>
         <ion-label>
@@ -54,6 +71,37 @@
       <ion-item-options side="end">
         <ion-item-option color="danger" (click)="deleteCard(card)">
           <ion-icon name="trash" slot="icon-only"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+
+  <!-- Lista de tarjetas ELIMINADAS -->
+  <ion-list *ngIf="currentView === 'deleted' && deletedCards.length > 0">
+    <ion-item-sliding *ngFor="let card of deletedCards; trackBy: trackByCardId">
+      <ion-item>
+        <ion-icon name="trash-bin" slot="start" color="medium"></ion-icon>
+        <ion-label>
+          <h2>{{ card.name }}</h2>
+          <p>UID: {{ card.uid }}</p>
+          <p class="deleted-date">
+            Eliminada: {{ card.deletedAt ? formatDate(card.deletedAt) : 'N/A' }}
+          </p>
+        </ion-label>
+        <ion-badge slot="end" color="medium">
+          Eliminada
+        </ion-badge>
+      </ion-item>
+
+      <ion-item-options side="start">
+        <ion-item-option color="success" (click)="restoreCard(card)">
+          <ion-icon name="arrow-undo" slot="icon-only"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+
+      <ion-item-options side="end">
+        <ion-item-option color="danger" (click)="permanentDeleteCard(card)">
+          <ion-icon name="alert-circle" slot="icon-only"></ion-icon>
         </ion-item-option>
       </ion-item-options>
     </ion-item-sliding>
@@ -97,27 +145,63 @@
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            <ion-icon name="checkmarkCircle" color="success"></ion-icon>
-            Tarjeta Detectada
+            <ion-icon
+              [name]="uidValid ? 'checkmark-circle' : 'alert-circle'"
+              [color]="uidValid ? 'success' : 'warning'">
+            </ion-icon>
+            {{ uidValid ? 'UID Válido' : 'Configura la Tarjeta' }}
           </ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <p><strong>UID:</strong> {{ scannedUid }}</p>
-          <p>Asigna un nombre a esta tarjeta:</p>
+          <!-- UID Input con validación -->
+          <ion-item>
+            <ion-input
+              [(ngModel)]="scannedUid"
+              (ionInput)="validateUidInput($event)"
+              label="UID de la Tarjeta"
+              placeholder="Ej: A3B4C5D6 o 1124"
+              maxlength="50"
+              [clearInput]="true">
+            </ion-input>
+          </ion-item>
 
+          <!-- Feedback de validación -->
+          <div class="validation-feedback" *ngIf="scannedUid.length > 0">
+            <ion-text [color]="uidValid ? 'success' : 'danger'">
+              <small>
+                <ion-icon
+                  [name]="uidValid ? 'checkmark-circle' : 'close-circle'">
+                </ion-icon>
+                {{ uidValid ? 'UID válido' : uidError }}
+              </small>
+            </ion-text>
+            <ion-text color="medium">
+              <small class="char-count">
+                {{ scannedUid.length }}/50 caracteres
+              </small>
+            </ion-text>
+          </div>
+
+          <ion-text color="medium" class="hint">
+            <p>
+              <ion-icon name="information-circle"></ion-icon>
+              Cualquier carácter alfanumérico, entre 1 y 50 caracteres. Ej: A3B4C5D6, 1124, CARD-001
+            </p>
+          </ion-text>          <!-- Nombre de la tarjeta -->
           <ion-item>
             <ion-input
               [(ngModel)]="newCardName"
+              label="Nombre de la Tarjeta"
               placeholder="Ej: Tarjeta de Juan"
               maxlength="50"
-              clearInput="true">
+              [clearInput]="true">
             </ion-input>
           </ion-item>
 
           <ion-button
             expand="full"
             (click)="saveCard()"
-            [disabled]="!newCardName.trim() || isAddingCard"
+            [disabled]="!newCardName.trim() || !uidValid || isAddingCard"
             class="save-button">
             <ion-spinner *ngIf="isAddingCard" slot="start" name="crescent"></ion-spinner>
             {{ isAddingCard ? 'Guardando...' : 'Guardar Tarjeta' }}

@@ -1,85 +1,134 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>
-      Historial de Accesos
-    </ion-title>
+    <ion-title>Historial de Accesos</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="clearFilters()" [disabled]="!filters.startDate && !filters.endDate && !filters.accessType && !searchTerm">
+      <ion-button (click)="clearFilters()" [disabled]="!hasActiveFilters()">
         <ion-icon name="close-circle-outline" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 
+  <!-- Filtros mejorados -->
   <ion-toolbar>
-    <ion-row>
-      <ion-col size="6">
-        <ion-datetime-button datetime="date-filter">
-          <ion-icon name="calendar-outline" slot="start"></ion-icon>
-          Fecha
-        </ion-datetime-button>
+    <ion-row class="ion-align-items-center">
+      <ion-col size="4">
+        <ion-datetime-button datetime="date-filter"></ion-datetime-button>
       </ion-col>
-      <ion-col size="6">
+
+      <ion-col size="4">
         <ion-select
+          interface="popover"
           placeholder="Tipo"
-          (ionChange)="handleTypeFilter($event)"
-          [value]="filters.accessType">
-          <ion-select-option value="REMOTE">App</ion-select-option>
-          <ion-select-option value="RFID">Tarjeta</ion-select-option>
+          [value]="filters.type"
+          (ionChange)="handleTypeFilter($event)">
+          <ion-select-option [value]="undefined">Todos</ion-select-option>
+          <ion-select-option value="RFID">🏷️ Tarjeta</ion-select-option>
+          <ion-select-option value="REMOTE">📱 App</ion-select-option>
         </ion-select>
       </ion-col>
 
+      <ion-col size="4" class="ion-text-center">
+        <ion-badge color="primary">
+          {{ totalRecords }} registros
+        </ion-badge>
+      </ion-col>
     </ion-row>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <!-- Modal de fecha -->
   <ion-modal [keepContentsMounted]="true">
     <ng-template>
       <ion-datetime
         id="date-filter"
         presentation="date"
         [showDefaultButtons]="true"
-        (ionChange)="handleDateFilter($event)"
-        [value]="filters.startDate?.toISOString()">
+        (ionChange)="handleDateFilter($event)">
       </ion-datetime>
     </ng-template>
   </ion-modal>
 
+  <!-- Refresher -->
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
+  <!-- Búsqueda -->
   <ion-searchbar
     [animated]="true"
-    placeholder="Buscar por nombre o tarjeta"
+    placeholder="Buscar por nombre o UID"
     (ionInput)="handleSearch($event)"
     [value]="searchTerm"
-  ></ion-searchbar>
+    [debounce]="500">
+  </ion-searchbar>
 
-  <ion-list>
-    <ion-item *ngFor="let record of filteredRecords">
+  <!-- Mensaje de error -->
+  <ion-card *ngIf="errorMessage" color="danger" class="error-card">
+    <ion-card-content>
+      <ion-text color="light">
+        <ion-icon name="alert-circle"></ion-icon>
+        {{ errorMessage }}
+      </ion-text>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Loader inicial -->
+  <div *ngIf="isLoading && accessRecords.length === 0" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <ion-text>
+      <p>Cargando historial...</p>
+    </ion-text>
+  </div>
+
+  <!-- Lista de accesos -->
+  <ion-list *ngIf="accessRecords.length > 0">
+    <ion-item *ngFor="let record of accessRecords; trackBy: trackByRecordId">
+      <ion-icon
+        [name]="getAccessIcon(record)"
+        slot="start"
+        [color]="getAccessColor(record)">
+      </ion-icon>
+
       <ion-label>
         <h2>{{ record.cardName }}</h2>
-        <p>ID Tarjeta: {{ record.cardId }}</p>
-        <p>{{ record.timestamp | date:'medium' }}</p>
+        <p>UID: {{ record.cardId }}</p>
+        <p>{{ record.timestamp | date:'dd/MM/yyyy HH:mm:ss' }}</p>
       </ion-label>
-      <ion-badge slot="end" [color]="record.isAuthorized ? 'success' : 'danger'">
-        {{ record.accessType === 'REMOTE' ? 'App' : 'Tarjeta' }}
+
+      <ion-badge
+        slot="end"
+        [color]="getAccessColor(record)">
+        {{ getAccessBadgeText(record) }}
       </ion-badge>
     </ion-item>
   </ion-list>
 
+  <!-- Infinite Scroll -->
   <ion-infinite-scroll
-    [disabled]="!hasMoreData"
-    (ionInfinite)="loadMore($event)"
-    [class.ion-hide]="!filteredRecords.length">
-    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    [disabled]="!hasNextPage"
+    (ionInfinite)="loadMore($event)">
+    <ion-infinite-scroll-content
+      loadingSpinner="crescent"
+      [loadingText]="'Cargando más registros...'">
+    </ion-infinite-scroll-content>
   </ion-infinite-scroll>
 
-  <div *ngIf="!filteredRecords.length && !isLoading" class="ion-text-center ion-padding">
-    <ion-icon name="document-outline" size="large" class="ion-margin-bottom"></ion-icon>
-    <p>No hay registros que mostrar</p>
+  <!-- Empty state -->
+  <div *ngIf="!isLoading && accessRecords.length === 0" class="empty-state">
+    <ion-icon name="document-outline" size="large" color="medium"></ion-icon>
+    <h2>No hay registros</h2>
+    <p *ngIf="hasActiveFilters()">Intenta con otros filtros</p>
+    <p *ngIf="!hasActiveFilters()">Aún no hay accesos registrados</p>
   </div>
 
-  <ion-loading [isOpen]="isLoading" message="Cargando..."></ion-loading>
+  <!-- Indicador de paginación -->
+  <div *ngIf="accessRecords.length > 0" class="pagination-info ion-text-center ion-padding">
+    <ion-text color="medium">
+      <small>
+        Página {{ currentPage }} de {{ totalPages }}
+        ({{ accessRecords.length }} / {{ totalRecords }} registros)
+      </small>
+    </ion-text>
+  </div>
 </ion-content>

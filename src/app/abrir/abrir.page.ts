@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import {
   IonHeader,
   IonToolbar,
@@ -6,113 +6,61 @@ import {
   IonContent,
   IonButton,
   IonIcon,
-  IonSpinner,
   IonCard,
   IonCardContent,
-  IonCardHeader,
-  IonCardTitle,
-  IonText,
-  IonBadge,
   AlertController,
-  ToastController
+  ToastController,
+  LoadingController
 } from '@ionic/angular/standalone';
-import { NgIf, NgClass, DatePipe, CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
 import {
-  lockOpen,
-  lockClosed,
-  checkmarkCircle,
-  alertCircle,
-  time,
-  shield
+  lockOpenOutline,
+  lockClosedOutline,
+  checkmarkCircleOutline,
+  alertCircleOutline
 } from 'ionicons/icons';
-import { Api } from '../services/api.service';
-
-interface RemoteOpenResponse {
-  message: string;
-  success: boolean;
-  timestamp: string;
-}
+import { AccessService } from '../services/access.service';
 
 @Component({
   selector: 'app-abrir',
   templateUrl: 'abrir.page.html',
   styleUrls: ['abrir.page.scss'],
   imports: [
+    CommonModule,
     IonHeader,
     IonToolbar,
     IonTitle,
     IonContent,
     IonButton,
     IonIcon,
-    IonSpinner,
     IonCard,
-    IonCardContent,
-    IonCardHeader,
-    IonCardTitle,
-    IonText,
-    IonBadge,
-    CommonModule,
-    DatePipe
+    IonCardContent
   ],
   standalone: true
 })
-export class AbrirPage implements OnInit {
-  isLoading = false;
-  feedbackMessage = '';
-  feedbackType: 'success' | 'error' | 'warning' | '' = '';
-  lastOpenTime: Date | null = null;
-  openCount = 0;
-  isSecurityConfirmationEnabled = true;
+export class AbrirPage {
+  isOpening = false;
 
   constructor(
-    private api: Api,
+    private accessService: AccessService,
     private alertController: AlertController,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private loadingController: LoadingController
   ) {
-    // Registrar iconos
     addIcons({
-      lockOpen,
-      lockClosed,
-      checkmarkCircle,
-      alertCircle,
-      time,
-      shield
+      lockOpenOutline,
+      lockClosedOutline,
+      checkmarkCircleOutline,
+      alertCircleOutline
     });
   }
 
-  ngOnInit() {
-    this.loadLastOpenData();
-  }
-
-  // Cargar datos de la última apertura
-  loadLastOpenData() {
-    const lastOpen = localStorage.getItem('last_remote_open');
-    const count = localStorage.getItem('remote_open_count');
-
-    if (lastOpen) {
-      this.lastOpenTime = new Date(lastOpen);
-    }
-
-    if (count) {
-      this.openCount = parseInt(count, 10);
-    }
-  }
-
-  // Abrir puerta con confirmación de seguridad
-  async abrirPuerta() {
-    if (this.isSecurityConfirmationEnabled) {
-      await this.showSecurityConfirmation();
-    } else {
-      this.executeRemoteOpen();
-    }
-  }
-
-  // Mostrar confirmación de seguridad
-  async showSecurityConfirmation() {
+  // Confirmar y abrir puerta
+  async confirmOpenDoor() {
     const alert = await this.alertController.create({
-      header: 'Confirmación de Seguridad',
-      message: '¿Estás seguro de que deseas abrir la puerta remotamente?',
+      header: 'Confirmar Apertura',
+      message: '¿Deseas abrir la puerta remotamente?',
       buttons: [
         {
           text: 'Cancelar',
@@ -120,11 +68,10 @@ export class AbrirPage implements OnInit {
           cssClass: 'secondary'
         },
         {
-          text: 'Abrir Puerta',
-          role: 'confirm',
-          cssClass: 'danger',
+          text: 'Abrir',
+          cssClass: 'primary',
           handler: () => {
-            this.executeRemoteOpen();
+            this.openDoor();
           }
         }
       ]
@@ -133,105 +80,57 @@ export class AbrirPage implements OnInit {
     await alert.present();
   }
 
-  // Ejecutar apertura remota
-  executeRemoteOpen() {
-    this.isLoading = true;
-    this.feedbackMessage = '';
-    this.feedbackType = '';
+  // Abrir puerta
+  async openDoor() {
+    const loading = await this.loadingController.create({
+      message: 'Abriendo puerta...',
+      spinner: 'crescent',
+      duration: 10000 // timeout de 10 segundos
+    });
 
-    this.api.post('/access/open', {}).subscribe({
-      next: (response: RemoteOpenResponse) => {
-        this.handleOpenSuccess(response);
+    await loading.present();
+    this.isOpening = true;
+
+    this.accessService.openDoorRemotely().subscribe({
+      next: async (response) => {
+        await loading.dismiss();
+        this.isOpening = false;
+
+        await this.showToast(
+          response.message || '🔓 Puerta abierta correctamente',
+          'success'
+        );
       },
-      error: (error) => {
-        this.handleOpenError(error);
+      error: async (error) => {
+        await loading.dismiss();
+        this.isOpening = false;
+
+        let errorMessage = 'Error al abrir la puerta';
+
+        if (error.status === 401) {
+          errorMessage = 'Sesión expirada. Inicia sesión nuevamente';
+        } else if (error.status === 403) {
+          errorMessage = 'No tienes permisos para abrir la puerta';
+        } else if (error.status === 0) {
+          errorMessage = 'No se puede conectar al servidor';
+        } else if (error.error?.message) {
+          errorMessage = error.error.message;
+        }
+
+        await this.showToast(errorMessage, 'danger');
       }
     });
-  }
-
-  // Manejar éxito de apertura
-  handleOpenSuccess(response: RemoteOpenResponse) {
-    this.feedbackMessage = response.message || 'Puerta abierta correctamente';
-    this.feedbackType = 'success';
-    this.isLoading = false;
-
-    // Actualizar estadísticas locales
-    this.lastOpenTime = new Date();
-    this.openCount++;
-
-    // Guardar en localStorage
-    localStorage.setItem('last_remote_open', this.lastOpenTime.toISOString());
-    localStorage.setItem('remote_open_count', this.openCount.toString());
-
-    // Mostrar toast de éxito
-    this.showToast('🔓 Puerta abierta remotamente', 'success');
-
-    // Limpiar mensaje después de 5 segundos
-    setTimeout(() => {
-      this.feedbackMessage = '';
-      this.feedbackType = '';
-    }, 5000);
-  }
-
-  // Manejar error de apertura
-  handleOpenError(error: any) {
-    let errorMessage = 'Error al abrir la puerta';
-
-    if (error.status === 401) {
-      errorMessage = 'Sesión expirada. Por favor, inicia sesión nuevamente.';
-    } else if (error.status === 0) {
-      errorMessage = 'No se puede conectar al servidor';
-    } else if (error.status === 403) {
-      errorMessage = 'No tienes permisos para abrir la puerta';
-    }
-
-    this.feedbackMessage = errorMessage;
-    this.feedbackType = 'error';
-    this.isLoading = false;
-
-    this.showToast(errorMessage, 'danger');
   }
 
   // Mostrar toast
   async showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {
     const toast = await this.toastController.create({
-      message: message,
+      message,
       duration: 3000,
-      color: color,
-      position: 'top'
+      color,
+      position: 'bottom',
+      icon: color === 'success' ? 'checkmark-circle-outline' : 'alert-circle-outline'
     });
-    toast.present();
-  }
-
-  // Alternar confirmación de seguridad
-  toggleSecurityConfirmation() {
-    this.isSecurityConfirmationEnabled = !this.isSecurityConfirmationEnabled;
-    const message = this.isSecurityConfirmationEnabled
-      ? 'Confirmación de seguridad activada'
-      : 'Confirmación de seguridad desactivada';
-
-    this.showToast(message, 'warning');
-  }
-
-  // Obtener tiempo transcurrido desde la última apertura
-  getTimeSinceLastOpen(): string {
-    if (!this.lastOpenTime) return 'Nunca';
-
-    const now = new Date();
-    const diff = now.getTime() - this.lastOpenTime.getTime();
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-
-    if (days > 0) return `Hace ${days} día${days > 1 ? 's' : ''}`;
-    if (hours > 0) return `Hace ${hours} hora${hours > 1 ? 's' : ''}`;
-    if (minutes > 0) return `Hace ${minutes} minuto${minutes > 1 ? 's' : ''}`;
-    return 'Hace menos de un minuto';
-  }
-
-  // Verificar si es hora pico (opcional para alertas)
-  isPeakHour(): boolean {
-    const hour = new Date().getHours();
-    return (hour >= 7 && hour <= 9) || (hour >= 17 && hour <= 19);
+    await toast.present();
   }
 }

@@ -11,8 +11,27 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface RegisterRequest {
+  username: string;
+  password: string;
+}
+
 export interface AuthResponse {
   access_token: string;
+}
+
+export interface RegisterResponse {
+  id: number;
+  username: string;
+  role: string;
+  createdAt: string;
+}
+
+export interface UserInfo {
+  username: string;
+  role: string;
+  exp: number;
+  iat: number;
 }
 
 @Injectable({
@@ -48,8 +67,39 @@ export class AuthService {
   // Método de logout
   logout(): void {
     this.removeToken();
+    this.clearCache();
     this.isAuthenticatedSubject.next(false);
     this.router.navigate(['/login']);
+  }
+
+  // Método de registro (solo para admins)
+  register(credentials: RegisterRequest): Observable<RegisterResponse> {
+    return this.api.post('/auth/register', credentials) as Observable<RegisterResponse>;
+  }
+
+  // Obtener información del usuario desde el token
+  getUserInfo(): UserInfo | null {
+    const token = this.getToken();
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return {
+        username: payload.username,
+        role: payload.role,
+        exp: payload.exp,
+        iat: payload.iat
+      };
+    } catch (error) {
+      console.error('Error al decodificar token:', error);
+      return null;
+    }
+  }
+
+  // Verificar si el usuario es admin
+  isAdmin(): boolean {
+    const userInfo = this.getUserInfo();
+    return userInfo?.role === 'admin';
   }
 
   // Verificar si está autenticado
@@ -85,5 +135,18 @@ export class AuthService {
   // Eliminar token
   private removeToken(): void {
     localStorage.removeItem(this.TOKEN_KEY);
+  }
+
+  // Limpiar caché completo
+  private clearCache(): void {
+    // Eliminar todos los datos excepto configuraciones
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key !== 'app_settings') {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
   }
 }
