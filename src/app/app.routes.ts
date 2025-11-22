@@ -1,5 +1,7 @@
+
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth-guard';
+import { loginBlockGuard } from './guards/auth-guard';
 
 export const routes: Routes = [
   {
@@ -9,7 +11,8 @@ export const routes: Routes = [
   },
   {
     path: 'login',
-    loadComponent: () => import('./pages/login/login.page').then( m => m.LoginPage)
+    loadComponent: () => import('./pages/login/login.page').then( m => m.LoginPage),
+    canActivate: [loginBlockGuard]
   },
   {
     path: 'register',

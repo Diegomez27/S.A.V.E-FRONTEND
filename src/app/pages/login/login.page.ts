@@ -70,8 +70,8 @@ export class LoginPage implements OnInit {
       this.authService.login(credentials).subscribe({
         next: (response) => {
           this.isLoading = false;
-          // Redirigir a las tabs después del login exitoso
-          this.router.navigate(['/tabs']);
+          // Redirigir a las tabs después del login exitoso y limpiar historial
+          this.router.navigate(['/tabs'], { replaceUrl: true });
         },
         error: (error) => {
           this.isLoading = false;

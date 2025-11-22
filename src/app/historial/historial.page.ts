@@ -96,7 +96,7 @@ export class HistorialPage implements OnInit, ViewWillEnter {
   accessRecords: AccessRecord[] = [];
 
   // Filtros
-  filters: AccessFilters = {};
+  filters: AccessFilters = { type: undefined };
   searchTerm: string = '';
 
   // Paginación (metadata del backend)
@@ -110,6 +110,8 @@ export class HistorialPage implements OnInit, ViewWillEnter {
   // Estados
   isLoading: boolean = false;
   errorMessage: string = '';
+    // Control visual del selector de fecha
+    selectedDate: string | undefined = undefined;
 
   constructor(private accessService: AccessService) {}
 
@@ -202,9 +204,9 @@ export class HistorialPage implements OnInit, ViewWillEnter {
 
   // ==================== FILTROS ====================
   handleDateFilter(event: any) {
-    const selectedDate = event.detail.value;
-    if (selectedDate) {
-      const date = new Date(selectedDate);
+      this.selectedDate = event.detail.value;
+      if (this.selectedDate) {
+        const date = new Date(this.selectedDate);
       // Establecer rango del día completo
       const startOfDay = new Date(date);
       startOfDay.setHours(0, 0, 0, 0);
@@ -231,14 +233,15 @@ export class HistorialPage implements OnInit, ViewWillEnter {
     const type = event.detail.value;
     this.filters = {
       ...this.filters,
-      type: type || undefined
+      type: (!type || type === 'Todos' || type === '') ? undefined : type
     };
     this.loadAccessRecords(true);
   }
 
   clearFilters() {
-    this.filters = {};
+    this.filters = { type: undefined };
     this.searchTerm = '';
+      this.selectedDate = undefined;
     this.loadAccessRecords(true);
   }
 
@@ -254,8 +257,8 @@ export class HistorialPage implements OnInit, ViewWillEnter {
   }
 
   getTypeFilterLabel(): string {
-    if (this.filters.type === 'RFID') return '🏷️ Tarjeta';
-    if (this.filters.type === 'REMOTE') return '📱 App';
+    if (this.filters.type === 'RFID') return 'Tarjeta';
+    if (this.filters.type === 'REMOTE') return 'App';
     return 'Todos';
   }
 

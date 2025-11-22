@@ -21,7 +21,7 @@
           placeholder="Tipo"
           [value]="filters.type"
           (ionChange)="handleTypeFilter($event)">
-          <ion-select-option [value]="undefined">Todos</ion-select-option>
+          <ion-select-option value="">Todos</ion-select-option>
           <ion-select-option value="RFID"> Tarjeta</ion-select-option>
           <ion-select-option value="REMOTE"> App</ion-select-option>
         </ion-select>
@@ -44,6 +44,7 @@
         id="date-filter"
         presentation="date"
         [showDefaultButtons]="true"
+        [value]="selectedDate"
         (ionChange)="handleDateFilter($event)">
       </ion-datetime>
     </ng-template>
