@@ -8,8 +8,6 @@ import {
   IonIcon,
   IonCard,
   IonCardContent,
-  AlertController,
-  ToastController,
   LoadingController
 } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
@@ -21,6 +19,7 @@ import {
   alertCircleOutline
 } from 'ionicons/icons';
 import { AccessService } from '../services/access.service';
+import { AlertService } from '../services/alert.service';
 
 @Component({
   selector: 'app-abrir',
@@ -44,8 +43,7 @@ export class AbrirPage {
 
   constructor(
     private accessService: AccessService,
-    private alertController: AlertController,
-    private toastController: ToastController,
+    private alertService: AlertService,
     private loadingController: LoadingController
   ) {
     addIcons({
@@ -58,26 +56,16 @@ export class AbrirPage {
 
   // Confirmar y abrir puerta
   async confirmOpenDoor() {
-    const alert = await this.alertController.create({
-      header: 'Confirmar Apertura',
-      message: '¿Deseas abrir la puerta remotamente?',
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-          cssClass: 'secondary'
-        },
-        {
-          text: 'Abrir',
-          cssClass: 'primary',
-          handler: () => {
-            this.openDoor();
-          }
-        }
-      ]
-    });
+    const confirmed = await this.alertService.showConfirmation(
+      '¿Abrir puerta?',
+      '¿Deseas abrir la puerta remotamente?',
+      'Sí, abrir',
+      'Cancelar'
+    );
 
-    await alert.present();
+    if (confirmed) {
+      this.openDoor();
+    }
   }
 
   // Abrir puerta
@@ -96,9 +84,9 @@ export class AbrirPage {
         await loading.dismiss();
         this.isOpening = false;
 
-        await this.showToast(
-          response.message || '🔓 Puerta abierta correctamente',
-          'success'
+        await this.alertService.showSuccess(
+          response.message || ' Puerta abierta correctamente',
+          2000
         );
       },
       error: async (error) => {
@@ -117,20 +105,9 @@ export class AbrirPage {
           errorMessage = error.error.message;
         }
 
-        await this.showToast(errorMessage, 'danger');
+        await this.alertService.showError('Error de apertura', errorMessage);
       }
     });
   }
 
-  // Mostrar toast
-  async showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {
-    const toast = await this.toastController.create({
-      message,
-      duration: 3000,
-      color,
-      position: 'bottom',
-      icon: color === 'success' ? 'checkmark-circle-outline' : 'alert-circle-outline'
-    });
-    await toast.present();
-  }
 }

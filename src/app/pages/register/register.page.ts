@@ -18,7 +18,6 @@ import {
   IonText,
   IonBackButton,
   IonButtons,
-  ToastController,
   LoadingController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -31,6 +30,7 @@ import {
   closeCircleOutline
 } from 'ionicons/icons';
 import { AuthService, RegisterRequest } from '../../services/auth.service';
+import { AlertService } from '../../services/alert.service';
 
 @Component({
   selector: 'app-register',
@@ -79,7 +79,7 @@ export class RegisterPage implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private toastController: ToastController,
+    private alertService: AlertService,
     private loadingController: LoadingController
   ) {
     addIcons({
@@ -95,7 +95,7 @@ export class RegisterPage implements OnInit {
   ngOnInit() {
     // Verificar si el usuario es admin
     if (!this.authService.isAdmin()) {
-      this.showToast('No tienes permisos para registrar usuarios', 'danger');
+      this.alertService.showError('Acceso denegado', 'No tienes permisos para registrar usuarios');
       this.router.navigate(['/tabs/perfil']);
     }
   }
@@ -194,7 +194,7 @@ export class RegisterPage implements OnInit {
   // Registrar usuario
   async registerUser() {
     if (!this.isFormValid()) {
-      this.showToast('Por favor completa todos los campos correctamente', 'warning');
+      this.alertService.showToast('Por favor completa todos los campos correctamente', 'warning');
       return;
     }
 
@@ -212,7 +212,7 @@ export class RegisterPage implements OnInit {
     this.authService.register(request).subscribe({
       next: async (response) => {
         await loading.dismiss();
-        await this.showToast(`Usuario ${this.username.trim()} registrado exitosamente`, 'success');
+        await this.alertService.showSuccess(`Usuario ${this.username.trim()} registrado exitosamente`);
         this.router.navigate(['/tabs/perfil']);
       },
       error: async (error) => {
@@ -228,7 +228,7 @@ export class RegisterPage implements OnInit {
           errorMessage = 'No tienes permisos para realizar esta acción';
         }
 
-        await this.showToast(errorMessage, 'danger');
+        await this.alertService.showError('Error de registro', errorMessage);
       }
     });
   }
@@ -240,17 +240,6 @@ export class RegisterPage implements OnInit {
 
   toggleConfirmPasswordVisibility() {
     this.showConfirmPassword = !this.showConfirmPassword;
-  }
-
-  // Mostrar toast
-  async showToast(message: string, color: string = 'primary') {
-    const toast = await this.toastController.create({
-      message,
-      duration: 3000,
-      color,
-      position: 'bottom'
-    });
-    await toast.present();
   }
 
   // Limpiar formulario

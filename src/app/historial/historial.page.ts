@@ -41,6 +41,7 @@ import {
 } from 'ionicons/icons';
 import { DatePipe, NgFor, NgIf } from '@angular/common';
 import { AccessService, AccessRecord, AccessFilters } from '../services/access.service';
+import { AlertService } from '../services/alert.service';
 
 // Registrar iconos
 addIcons({
@@ -113,7 +114,10 @@ export class HistorialPage implements OnInit, ViewWillEnter {
     // Control visual del selector de fecha
     selectedDate: string | undefined = undefined;
 
-  constructor(private accessService: AccessService) {}
+  constructor(
+    private accessService: AccessService,
+    private alertService: AlertService
+  ) {}
 
   ngOnInit() {
     this.loadAccessRecords();
@@ -172,6 +176,7 @@ export class HistorialPage implements OnInit, ViewWillEnter {
       error: (error) => {
         console.error('❌ Error fetching records:', error);
         this.errorMessage = this.getErrorMessage(error);
+        this.alertService.showError('Error al cargar historial', this.errorMessage);
         this.isLoading = false;
       }
     });

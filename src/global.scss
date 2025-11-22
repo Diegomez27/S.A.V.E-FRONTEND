@@ -35,3 +35,101 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+/* SweetAlert2 CSS */
+@import 'sweetalert2/dist/sweetalert2.min.css';
+
+/* SweetAlert2 Backdrop fix para Ionic */
+.swal2-container {
+  z-index: 99999 !important;
+}
+
+.swal2-backdrop-show {
+  background: rgba(0, 0, 0, 0.4) !important;
+}
+
+/* SweetAlert2 personalización minimalista */
+.swal2-popup {
+  border-radius: 16px !important;
+  padding: 2rem !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+  position: relative !important;
+}
+
+.swal2-title {
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  color: #1a1a1a !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.swal2-html-container {
+  font-size: 1rem !important;
+  color: #666 !important;
+  line-height: 1.5 !important;
+}
+
+.swal2-confirm {
+  border-radius: 10px !important;
+  padding: 0.75rem 2rem !important;
+  font-weight: 500 !important;
+  font-size: 1rem !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.swal2-confirm:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(56, 128, 255, 0.3) !important;
+}
+
+.swal2-cancel {
+  border-radius: 10px !important;
+  padding: 0.75rem 2rem !important;
+  font-weight: 500 !important;
+  font-size: 1rem !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.swal2-cancel:hover {
+  transform: translateY(-1px) !important;
+}
+
+.swal2-icon {
+  margin: 1.5rem auto !important;
+  border-width: 3px !important;
+}
+
+/* Toast personalización */
+.swal2-toast {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  padding: 1rem !important;
+}
+
+.swal2-toast .swal2-title {
+  font-size: 0.95rem !important;
+  margin: 0 !important;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .swal2-popup {
+    background-color: #1e1e1e !important;
+    border: 1px solid #333 !important;
+  }
+
+  .swal2-title {
+    color: #ffffff !important;
+  }
+
+  .swal2-html-container {
+    color: #cccccc !important;
+  }
+
+  .swal2-toast {
+    background-color: #2a2a2a !important;
+  }
+}

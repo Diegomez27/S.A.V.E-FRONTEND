@@ -12,9 +12,7 @@ import {
   IonLabel,
   IonItem,
   IonList,
-  IonAvatar,
-  AlertController,
-  ToastController
+  IonAvatar
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -25,6 +23,7 @@ import {
   shieldCheckmarkOutline
 } from 'ionicons/icons';
 import { AuthService } from '../services/auth.service';
+import { AlertService } from '../services/alert.service';
 import { environment } from '../../environments/environment';
 
 @Component({
@@ -56,8 +55,7 @@ export class PerfilPage implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private alertController: AlertController,
-    private toastController: ToastController
+    private alertService: AlertService
   ) {
     addIcons({
       personOutline,
@@ -94,32 +92,22 @@ export class PerfilPage implements OnInit {
 
   // Confirmar y realizar logout
   async confirmLogout() {
-    const alert = await this.alertController.create({
-      header: 'Cerrar Sesión',
-      message: '¿Estás seguro que deseas cerrar sesión?',
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-          cssClass: 'secondary'
-        },
-        {
-          text: 'Cerrar Sesión',
-          cssClass: 'danger',
-          handler: () => {
-            this.logout();
-          }
-        }
-      ]
-    });
+    const confirmed = await this.alertService.showConfirmation(
+      '¿Cerrar sesión?',
+      '¿Estás seguro que deseas salir?',
+      'Sí, salir',
+      'Cancelar'
+    );
 
-    await alert.present();
+    if (confirmed) {
+      this.logout();
+    }
   }
 
   // Realizar logout
   logout() {
     this.authService.logout();
-    this.showToast('Sesión cerrada correctamente', 'success');
+    this.router.navigate(['/login'], { replaceUrl: true });
   }
 
   // Navegar a página de registro (solo admins)
@@ -129,14 +117,4 @@ export class PerfilPage implements OnInit {
     }
   }
 
-  // Mostrar toast
-  async showToast(message: string, color: string = 'primary') {
-    const toast = await this.toastController.create({
-      message,
-      duration: 2000,
-      color,
-      position: 'bottom'
-    });
-    await toast.present();
-  }
 }

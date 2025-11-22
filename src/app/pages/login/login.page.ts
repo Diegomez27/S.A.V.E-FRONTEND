@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { AlertService } from '../../services/alert.service';
 import { Router } from '@angular/router';
 import {
   IonContent,
@@ -44,7 +45,8 @@ export class LoginPage implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private alertService: AlertService
   ) {
     addIcons({ lockClosed, person });
   }
@@ -68,18 +70,21 @@ export class LoginPage implements OnInit {
       const credentials: LoginCredentials = this.loginForm.value;
 
       this.authService.login(credentials).subscribe({
-        next: (response) => {
+        next: async (response) => {
           this.isLoading = false;
+          await this.alertService.showSuccess('¡Bienvenido!', 1500);
           // Redirigir a las tabs después del login exitoso y limpiar historial
           this.router.navigate(['/tabs'], { replaceUrl: true });
         },
-        error: (error) => {
+        error: async (error) => {
           this.isLoading = false;
           this.handleLoginError(error);
+          await this.alertService.showError('Error de autenticación', this.loginError);
         }
       });
     } else {
       this.markFormGroupTouched();
+      this.alertService.showToast('Por favor completa todos los campos', 'warning');
     }
   }
 

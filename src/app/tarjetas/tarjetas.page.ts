@@ -29,9 +29,7 @@ import {
   IonItemOptions,
   IonItemOption,
   IonSegment,
-  IonSegmentButton,
-  AlertController,
-  ToastController
+  IonSegmentButton
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -52,6 +50,7 @@ import {
 import { CardService, Card, CreateCardRequest } from '../services/card.service';
 import { NfcService } from '../services/nfc.service';
 import { AuthService } from '../services/auth.service';
+import { AlertService } from '../services/alert.service';
 
 @Component({
   selector: 'app-tarjetas',
@@ -121,8 +120,7 @@ export class TarjetasPage implements OnInit {
   constructor(
     private cardService: CardService,
     private nfcService: NfcService,
-    private alertController: AlertController,
-    private toastController: ToastController,
+    private alertService: AlertService,
     private authService: AuthService
   ) {
     // Registrar iconos
@@ -183,7 +181,7 @@ export class TarjetasPage implements OnInit {
         console.error('Error loading cards:', error);
         this.errorMessage = 'Error al cargar las tarjetas';
         this.isLoading = false;
-        this.showToast('Error al cargar las tarjetas', 'danger');
+        this.alertService.showError('Error de carga', 'No se pudieron cargar las tarjetas');
       }
     });
   }
@@ -201,7 +199,7 @@ export class TarjetasPage implements OnInit {
         console.error('Error loading deleted cards:', error);
         this.errorMessage = 'Error al cargar tarjetas eliminadas';
         this.isLoading = false;
-        this.showToast('Error al cargar tarjetas eliminadas', 'danger');
+        this.alertService.showError('Error de carga', 'No se pudieron cargar las tarjetas eliminadas');
       }
     });
   }
@@ -251,7 +249,7 @@ export class TarjetasPage implements OnInit {
   // Leer UID de tarjeta NFC (solo mostrar)
   async readNfcUid() {
     if (!this.nfcAvailable) {
-      this.showToast('NFC no está disponible en este dispositivo', 'warning');
+      this.alertService.showToast('NFC no está disponible en este dispositivo', 'warning');
       return;
     }
 
@@ -265,13 +263,13 @@ export class TarjetasPage implements OnInit {
       if (uid) {
         this.readUid = uid;
         this.isNfcModalOpen = true;
-        this.showToast('UID leído correctamente', 'success');
+        this.alertService.showToast('UID leído correctamente', 'success');
       } else {
-        this.showToast('No se pudo leer la tarjeta NFC', 'danger');
+        this.alertService.showError('Error NFC', 'No se pudo leer la tarjeta');
       }
     } catch (error) {
       this.errorMessage = 'Error al escanear NFC';
-      this.showToast('Error al escanear la tarjeta NFC', 'danger');
+      this.alertService.showError('Error NFC', 'No se pudo escanear la tarjeta');
     } finally {
       this.isNfcScanning = false;
     }
@@ -315,32 +313,32 @@ export class TarjetasPage implements OnInit {
   async copyUid(uid: string) {
     try {
       await navigator.clipboard.writeText(uid);
-      this.showToast('UID copiado al portapapeles', 'success');
+      this.alertService.showToast('UID copiado al portapapeles', 'success');
     } catch (error) {
       console.error('Error copying to clipboard:', error);
-      this.showToast('No se pudo copiar el UID', 'warning');
+      this.alertService.showToast('No se pudo copiar el UID', 'warning');
     }
   }
 
   // Guardar nueva tarjeta
-  saveCard() {
+  async saveCard() {
     if (!this.isAdmin) {
-      this.showToast('No tienes permisos para crear tarjetas', 'danger');
+      this.alertService.showError('Acceso denegado', 'No tienes permisos para crear tarjetas');
       return;
     }
 
     if (!this.newCardName.trim()) {
-      this.showToast('Por favor ingresa un nombre', 'warning');
+      this.alertService.showToast('Por favor ingresa un nombre', 'warning');
       return;
     }
 
     if (!this.newCardUid.trim()) {
-      this.showToast('Por favor ingresa el UID', 'warning');
+      this.alertService.showToast('Por favor ingresa el UID', 'warning');
       return;
     }
 
     if (!this.uidValid) {
-      this.showToast('UID inválido. Debe tener entre 1 y 50 caracteres', 'warning');
+      this.alertService.showToast('UID inválido. Debe tener entre 1 y 50 caracteres', 'warning');
       return;
     }
 
@@ -352,9 +350,9 @@ export class TarjetasPage implements OnInit {
     };
 
     this.cardService.createCard(cardData).subscribe({
-      next: (response) => {
+      next: async (response) => {
         console.log('Card created successfully:', response);
-        this.showToast('Tarjeta agregada correctamente', 'success');
+        await this.alertService.showSuccess('Tarjeta agregada correctamente');
         this.loadActiveCards(true); // Recargar lista
         this.closeModal();
         this.isAddingCard = false;
@@ -379,7 +377,7 @@ export class TarjetasPage implements OnInit {
           errorMessage = 'No se puede conectar al servidor';
         }
 
-        this.showToast(errorMessage, 'danger');
+        this.alertService.showError('Error al crear tarjeta', errorMessage);
         this.isAddingCard = false;
       }
     });
@@ -388,142 +386,104 @@ export class TarjetasPage implements OnInit {
   // Eliminar tarjeta
   async deleteCard(card: Card) {
     if (!this.isAdmin) {
-      this.showToast('No tienes permisos para eliminar tarjetas', 'danger');
+      this.alertService.showError('Acceso denegado', 'No tienes permisos para eliminar tarjetas');
       return;
     }
 
-    const alert = await this.alertController.create({
-      header: 'Eliminar Tarjeta',
-      message: `¿Estás seguro de eliminar la tarjeta "${card.name}"?`,
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel'
-        },
-        {
-          text: 'Eliminar',
-          role: 'destructive',
-          handler: () => {
-            this.confirmDeleteCard(card.id);
-          }
-        }
-      ]
-    });
+    const confirmed = await this.alertService.showConfirmation(
+      '¿Eliminar tarjeta?',
+      `¿Estás seguro de eliminar "${card.name}"?`,
+      'Sí, eliminar',
+      'Cancelar'
+    );
 
-    await alert.present();
+    if (confirmed) {
+      this.confirmDeleteCard(card.id);
+    }
   }
 
   // Confirmar eliminación
   confirmDeleteCard(cardId: number) {
     if (!this.isAdmin) {
-      this.showToast('No tienes permisos para eliminar tarjetas', 'danger');
+      this.alertService.showError('Acceso denegado', 'No tienes permisos para eliminar tarjetas');
       return;
     }
 
     this.cardService.deleteCard(cardId).subscribe({
       next: (response) => {
-        this.showToast('Tarjeta movida a papelera', 'success');
+        this.alertService.showSuccess('Tarjeta movida a papelera');
         this.loadActiveCards(true); // Recargar lista activas
       },
       error: (error) => {
         console.error('Error deleting card:', error);
-        this.showToast('Error al eliminar la tarjeta', 'danger');
+        this.alertService.showError('Error', 'No se pudo eliminar la tarjeta');
       }
     });
   }
 
   // ==================== RESTAURAR TARJETA ====================
   async restoreCard(card: Card) {
-    const alert = await this.alertController.create({
-      header: 'Restaurar Tarjeta',
-      message: `¿Restaurar la tarjeta "${card.name}"?`,
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel'
-        },
-        {
-          text: 'Restaurar',
-          handler: () => {
-            this.confirmRestoreCard(card.id);
-          }
-        }
-      ]
-    });
+    const confirmed = await this.alertService.showConfirmation(
+      '¿Restaurar tarjeta?',
+      `¿Restaurar "${card.name}"?`,
+      'Sí, restaurar',
+      'Cancelar'
+    );
 
-    await alert.present();
+    if (confirmed) {
+      this.confirmRestoreCard(card.id);
+    }
   }
 
   confirmRestoreCard(cardId: number) {
     if (!this.isAdmin) {
-      this.showToast('No tienes permisos para restaurar tarjetas', 'danger');
+      this.alertService.showError('Acceso denegado', 'No tienes permisos para restaurar tarjetas');
       return;
     }
 
     this.cardService.restoreCard(cardId).subscribe({
       next: (response) => {
-        this.showToast('Tarjeta restaurada correctamente', 'success');
+        this.alertService.showSuccess('Tarjeta restaurada correctamente');
         this.loadDeletedCards(true); // Recargar papelera
         this.loadActiveCards(true); // Recargar activas
       },
       error: (error) => {
         console.error('Error restoring card:', error);
-        this.showToast('Error al restaurar la tarjeta', 'danger');
+        this.alertService.showError('Error', 'No se pudo restaurar la tarjeta');
       }
     });
   }
 
   // ==================== ELIMINAR PERMANENTEMENTE ====================
   async permanentDeleteCard(card: Card) {
-    const alert = await this.alertController.create({
-      header: 'Eliminar Permanentemente',
-      message: `Esta acción no se puede deshacer.\n\n¿Eliminar "${card.name}"?`,
-      cssClass: 'danger-alert',
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel'
-        },
-        {
-          text: 'ELIMINAR',
-          role: 'destructive',
-          handler: () => {
-            this.confirmPermanentDelete(card.id);
-          }
-        }
-      ]
-    });
+    const confirmed = await this.alertService.showConfirmation(
+      'Eliminar permanentemente',
+      `Esta acción no se puede deshacer.\n\n¿Eliminar "${card.name}"?`,
+      'SÍ, ELIMINAR',
+      'Cancelar'
+    );
 
-    await alert.present();
+    if (confirmed) {
+      this.confirmPermanentDelete(card.id);
+    }
   }
 
   confirmPermanentDelete(cardId: number) {
     if (!this.isAdmin) {
-      this.showToast('No tienes permisos para eliminar tarjetas', 'danger');
+      this.alertService.showError('Acceso denegado', 'No tienes permisos para eliminar tarjetas');
       return;
     }
 
     this.cardService.permanentDeleteCard(cardId).subscribe({
       next: (response) => {
-        this.showToast('Tarjeta eliminada permanentemente', 'warning');
+        this.alertService.showSuccess('Tarjeta eliminada permanentemente');
         this.loadDeletedCards(true); // Recargar papelera
       },
       error: (error) => {
         console.error('Error permanently deleting card:', error);
-        this.showToast('Error al eliminar permanentemente', 'danger');
+        this.alertService.showError('Error', 'No se pudo eliminar permanentemente');
       }
     });
-  }
-
-  // Mostrar toast
-  async showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {
-    const toast = await this.toastController.create({
-      message: message,
-      duration: 3000,
-      color: color,
-      position: 'bottom'
-    });
-    toast.present();
   }
 
   // Formatear fecha
