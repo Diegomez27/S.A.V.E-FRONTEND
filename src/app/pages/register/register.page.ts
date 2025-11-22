@@ -212,7 +212,7 @@ export class RegisterPage implements OnInit {
     this.authService.register(request).subscribe({
       next: async (response) => {
         await loading.dismiss();
-        await this.showToast(`Usuario ${response.username} registrado exitosamente`, 'success');
+        await this.showToast(`Usuario ${this.username.trim()} registrado exitosamente`, 'success');
         this.router.navigate(['/tabs/perfil']);
       },
       error: async (error) => {

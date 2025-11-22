@@ -45,10 +45,13 @@ import {
   close,
   arrowUndo,
   trashBin,
-  alertCircle
+  alertCircle,
+  copy,
+  informationCircle
 } from 'ionicons/icons';
 import { CardService, Card, CreateCardRequest } from '../services/card.service';
 import { NfcService } from '../services/nfc.service';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-tarjetas',
@@ -65,8 +68,6 @@ import { NfcService } from '../services/nfc.service';
     IonButton,
     IonIcon,
     IonCard,
-    IonCardHeader,
-    IonCardTitle,
     IonCardContent,
     IonRefresher,
     IonRefresherContent,
@@ -100,22 +101,29 @@ export class TarjetasPage implements OnInit {
   isNfcScanning = false;
   isAddingCard = false;
 
-  // Modal para agregar tarjeta
+  // Modal para agregar tarjeta manualmente
   isModalOpen = false;
   newCardName = '';
-  scannedUid = '';
+  newCardUid = '';
   uidValid = false;
   uidError = '';
+
+  // Modal para mostrar UID leído
+  isNfcModalOpen = false;
+  readUid = '';
 
   // Estados
   nfcAvailable = false;
   errorMessage = '';
 
+  isAdmin: boolean = false;
+
   constructor(
     private cardService: CardService,
     private nfcService: NfcService,
     private alertController: AlertController,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private authService: AuthService
   ) {
     // Registrar iconos
     addIcons({
@@ -129,14 +137,28 @@ export class TarjetasPage implements OnInit {
       close,
       arrowUndo,
       trashBin,
-      alertCircle
+      alertCircle,
+      copy,
+      informationCircle
     });
 
-    this.nfcAvailable = this.nfcService.isAvailable;
+    this.checkNfcAvailability();
+    this.isAdmin = this.authService.isAdmin();
   }
 
   ngOnInit() {
+    this.isAdmin = this.authService.isAdmin();
     this.loadCards();
+  }
+
+  // Verificar disponibilidad de NFC
+  async checkNfcAvailability() {
+    try {
+      this.nfcAvailable = await this.nfcService.isAvailable();
+    } catch (error) {
+      console.error('Error checking NFC availability:', error);
+      this.nfcAvailable = false;
+    }
   }
 
   // ==================== CARGAR TARJETAS ====================
@@ -210,24 +232,24 @@ export class TarjetasPage implements OnInit {
   validateUidInput(event: any) {
     const input = event.target.value || '';
     // Trim y limitar longitud
-    this.scannedUid = input.trim();
+    this.newCardUid = input.trim();
 
     // Validar
-    if (this.scannedUid.length === 0) {
+    if (this.newCardUid.length === 0) {
       this.uidValid = false;
       this.uidError = '';
-    } else if (this.scannedUid.length > 50) {
+    } else if (this.newCardUid.length > 50) {
       this.uidValid = false;
       this.uidError = 'Máximo 50 caracteres';
-      this.scannedUid = this.scannedUid.substring(0, 50);
+      this.newCardUid = this.newCardUid.substring(0, 50);
     } else {
       this.uidValid = true;
       this.uidError = '';
     }
   }
 
-  // Escanear tarjeta NFC
-  async scanNfcCard() {
+  // Leer UID de tarjeta NFC (solo mostrar)
+  async readNfcUid() {
     if (!this.nfcAvailable) {
       this.showToast('NFC no está disponible en este dispositivo', 'warning');
       return;
@@ -235,105 +257,84 @@ export class TarjetasPage implements OnInit {
 
     this.isNfcScanning = true;
     this.errorMessage = '';
+    this.readUid = '';
 
     try {
       const uid = await this.nfcService.readTag();
 
       if (uid) {
-        // Verificar si la tarjeta ya está registrada
-        this.cardService.isUidRegistered(uid).subscribe({
-          next: (isRegistered) => {
-            if (isRegistered) {
-              this.showToast('Esta tarjeta ya está registrada', 'warning');
-            } else {
-              this.scannedUid = uid;
-              this.openAddCardModal();
-            }
-            this.isNfcScanning = false;
-          },
-          error: (error) => {
-            console.error('Error checking UID:', error);
-            this.isNfcScanning = false;
-            this.showToast('Error al verificar la tarjeta', 'danger');
-          }
-        });
+        this.readUid = uid;
+        this.isNfcModalOpen = true;
+        this.showToast('UID leído correctamente', 'success');
       } else {
-        this.isNfcScanning = false;
         this.showToast('No se pudo leer la tarjeta NFC', 'danger');
       }
     } catch (error) {
-      this.isNfcScanning = false;
       this.errorMessage = 'Error al escanear NFC';
       this.showToast('Error al escanear la tarjeta NFC', 'danger');
+    } finally {
+      this.isNfcScanning = false;
     }
   }
 
-  // Agregar tarjeta manualmente (para testing)
-  async addManualCard() {
-    const alert = await this.alertController.create({
-      header: 'Agregar Tarjeta Manual',
-      message: 'Para pruebas solamente',
-      inputs: [
-        {
-          name: 'uid',
-          type: 'text',
-          placeholder: 'UID (Ej: A3B4C5D6, 1124, CARD-001)'
-        },
-        {
-          name: 'name',
-          type: 'text',
-          placeholder: 'Nombre de la tarjeta'
-        }
-      ],
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel'
-        },
-        {
-          text: 'Agregar',
-          handler: (data) => {
-            if (data.uid && data.name) {
-              this.scannedUid = data.uid.trim();
-              this.newCardName = data.name;
-
-              // Validar antes de guardar
-              if (this.isValidUid(this.scannedUid)) {
-                this.uidValid = true;
-                this.saveCard();
-              } else {
-                this.showToast('UID inválido. Debe tener entre 1 y 50 caracteres', 'warning');
-              }
-            }
-          }
-        }
-      ]
-    });
-
-    await alert.present();
-  }
-
-  // Abrir modal para agregar tarjeta
-  openAddCardModal() {
+  // Abrir modal para agregar tarjeta manualmente
+  openAddCardModal(prefilledUid?: string) {
     this.newCardName = '';
+    this.newCardUid = prefilledUid || '';
+
+    // Validar el UID prellenado si existe
+    if (prefilledUid) {
+      this.uidValid = this.isValidUid(prefilledUid);
+      this.uidError = this.uidValid ? '' : 'UID inválido';
+    } else {
+      this.uidValid = false;
+      this.uidError = '';
+    }
+
     this.isModalOpen = true;
   }
 
-  // Cerrar modal
+
+
+  // Cerrar modal de agregar tarjeta
   closeModal() {
     this.isModalOpen = false;
     this.newCardName = '';
-    this.scannedUid = '';
+    this.newCardUid = '';
+    this.uidValid = false;
+    this.uidError = '';
+  }
+
+  // Cerrar modal NFC
+  closeNfcModal() {
+    this.isNfcModalOpen = false;
+    this.readUid = '';
+  }
+
+  // Copiar UID al portapapeles
+  async copyUid(uid: string) {
+    try {
+      await navigator.clipboard.writeText(uid);
+      this.showToast('UID copiado al portapapeles', 'success');
+    } catch (error) {
+      console.error('Error copying to clipboard:', error);
+      this.showToast('No se pudo copiar el UID', 'warning');
+    }
   }
 
   // Guardar nueva tarjeta
   saveCard() {
+    if (!this.isAdmin) {
+      this.showToast('No tienes permisos para crear tarjetas', 'danger');
+      return;
+    }
+
     if (!this.newCardName.trim()) {
       this.showToast('Por favor ingresa un nombre', 'warning');
       return;
     }
 
-    if (!this.scannedUid) {
+    if (!this.newCardUid.trim()) {
       this.showToast('Por favor ingresa el UID', 'warning');
       return;
     }
@@ -346,7 +347,7 @@ export class TarjetasPage implements OnInit {
     this.isAddingCard = true;
 
     const cardData: CreateCardRequest = {
-      uid: this.scannedUid,
+      uid: this.newCardUid.trim(),
       name: this.newCardName.trim()
     };
 
@@ -386,6 +387,11 @@ export class TarjetasPage implements OnInit {
 
   // Eliminar tarjeta
   async deleteCard(card: Card) {
+    if (!this.isAdmin) {
+      this.showToast('No tienes permisos para eliminar tarjetas', 'danger');
+      return;
+    }
+
     const alert = await this.alertController.create({
       header: 'Eliminar Tarjeta',
       message: `¿Estás seguro de eliminar la tarjeta "${card.name}"?`,
@@ -409,6 +415,11 @@ export class TarjetasPage implements OnInit {
 
   // Confirmar eliminación
   confirmDeleteCard(cardId: number) {
+    if (!this.isAdmin) {
+      this.showToast('No tienes permisos para eliminar tarjetas', 'danger');
+      return;
+    }
+
     this.cardService.deleteCard(cardId).subscribe({
       next: (response) => {
         this.showToast('Tarjeta movida a papelera', 'success');
@@ -444,6 +455,11 @@ export class TarjetasPage implements OnInit {
   }
 
   confirmRestoreCard(cardId: number) {
+    if (!this.isAdmin) {
+      this.showToast('No tienes permisos para restaurar tarjetas', 'danger');
+      return;
+    }
+
     this.cardService.restoreCard(cardId).subscribe({
       next: (response) => {
         this.showToast('Tarjeta restaurada correctamente', 'success');
@@ -460,8 +476,8 @@ export class TarjetasPage implements OnInit {
   // ==================== ELIMINAR PERMANENTEMENTE ====================
   async permanentDeleteCard(card: Card) {
     const alert = await this.alertController.create({
-      header: '⚠️ Eliminar Permanentemente',
-      message: `Esta acción NO SE PUEDE DESHACER.\n\n¿Eliminar "${card.name}" para siempre?`,
+      header: 'Eliminar Permanentemente',
+      message: `Esta acción no se puede deshacer.\n\n¿Eliminar "${card.name}"?`,
       cssClass: 'danger-alert',
       buttons: [
         {
@@ -482,6 +498,11 @@ export class TarjetasPage implements OnInit {
   }
 
   confirmPermanentDelete(cardId: number) {
+    if (!this.isAdmin) {
+      this.showToast('No tienes permisos para eliminar tarjetas', 'danger');
+      return;
+    }
+
     this.cardService.permanentDeleteCard(cardId).subscribe({
       next: (response) => {
         this.showToast('Tarjeta eliminada permanentemente', 'warning');

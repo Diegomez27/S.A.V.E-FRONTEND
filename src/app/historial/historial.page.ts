@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ViewWillEnter } from '@ionic/angular';
 import {
   IonHeader,
   IonToolbar,
@@ -90,7 +91,7 @@ addIcons({
   ],
   standalone: true
 })
-export class HistorialPage implements OnInit {
+export class HistorialPage implements OnInit, ViewWillEnter {
   // Data
   accessRecords: AccessRecord[] = [];
 
@@ -114,6 +115,10 @@ export class HistorialPage implements OnInit {
 
   ngOnInit() {
     this.loadAccessRecords();
+  }
+
+  ionViewWillEnter() {
+    this.loadAccessRecords(true);
   }
 
   // ==================== CARGAR REGISTROS ====================
@@ -268,9 +273,9 @@ export class HistorialPage implements OnInit {
 
   getAccessBadgeText(record: AccessRecord): string {
     if (record.accessType === 'REMOTE') {
-      return record.isAuthorized ? '📱 App' : '❌ App';
+      return record.isAuthorized ? 'App' : 'App';
     } else {
-      return record.isAuthorized ? '🏷️ Tarjeta' : '❌ Tarjeta';
+      return record.isAuthorized ? 'Tarjeta' : 'Tarjeta';
     }
   }
 
