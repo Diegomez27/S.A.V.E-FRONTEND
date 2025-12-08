@@ -1,229 +1,180 @@
-ion-content {
-  --background: #f5f5f5;
+/* abrir.page.scss */
+
+.open-background {
+  --background: #f4f5f8;
 }
 
-ion-header {
-  ion-toolbar {
-    --background: transparent;
-    --border-width: 0;
-  }
-}
-
-// Header con candado
-.door-header {
+/* HEADER AZUL CURVO */
+.dashboard-header {
+  background: var(--ion-color-primary);
+  padding: 20px 20px 40px 20px;
+  border-bottom-left-radius: 30px;
+  border-bottom-right-radius: 30px;
   text-align: center;
-  padding: 60px 20px 40px;
-  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
-  border-radius: 0 0 32px 32px;
-  margin: -16px -16px 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 30px rgba(10, 31, 68, 0.2);
   position: relative;
-  overflow: hidden;
-
-  // Decoración de fondo
-  &::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-    animation: pulse 3s ease-in-out infinite;
-  }
-
-  .lock-icon-container {
-    position: relative;
-    z-index: 1;
-    margin: 0 auto 24px;
-    width: 120px;
-    height: 120px;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 4px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  }
-
-  .lock-icon {
-    font-size: 64px;
-    color: white;
-    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
-  }
-
-  h1 {
-    position: relative;
-    z-index: 1;
-    font-size: 32px;
-    font-weight: 700;
-    margin: 0 0 8px 0;
-    color: white;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  }
-
-  p {
-    position: relative;
-    z-index: 1;
-    font-size: 16px;
-    color: rgba(255, 255, 255, 0.9);
-    margin: 0;
-    font-weight: 500;
-  }
+  z-index: 1;
 }
 
-// Card principal
-.main-card {
-  margin: 16px;
+.page-title {
+  color: white;
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: 1px;
+}
+
+.header-subtitle {
+  color: rgba(255,255,255,0.7);
+  margin: 5px 0 0 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* CONTENEDOR CENTRAL */
+.center-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 75vh; /* Centrado vertical */
+  padding-bottom: 50px;
+}
+
+/* INDICADOR LED */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  padding: 8px 16px;
   border-radius: 20px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  margin-bottom: 40px;
 
-  ion-card-content {
-    padding: 32px 24px;
+  span {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 1px;
+  }
+
+  .led-light {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+
+    &.online {
+      background-color: #22c55e; /* Verde */
+      box-shadow: 0 0 8px #22c55e;
+    }
+
+    &.busy {
+      background-color: var(--ion-color-secondary); /* Cian parpadeando */
+      box-shadow: 0 0 10px var(--ion-color-secondary);
+      animation: blink 0.5s infinite alternate;
+    }
   }
 }
 
-// Botón de apertura
-.open-button {
-  --border-radius: 16px;
-  --box-shadow: 0 8px 24px rgba(var(--ion-color-primary-rgb), 0.3);
-  --padding-top: 20px;
-  --padding-bottom: 20px;
-  --background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
-
-  font-weight: 700;
-  font-size: 18px;
-  letter-spacing: 0.5px;
-  text-transform: none;
-  margin-bottom: 20px;
-  transition: all 0.3s ease;
-
-  &:not(.button-disabled):hover {
-    --box-shadow: 0 12px 32px rgba(var(--ion-color-primary-rgb), 0.4);
-    transform: translateY(-2px);
-  }
-
-  &:not(.button-disabled):active {
-    transform: translateY(0);
-  }
-
-  ion-icon {
-    font-size: 28px;
-    margin-right: 8px;
-  }
+@keyframes blink {
+  from { opacity: 1; }
+  to { opacity: 0.3; }
 }
 
-// Info del botón
-.button-info {
+/* --- ZONA DEL BOTÓN --- */
+.button-wrapper {
+  position: relative;
+  width: 220px;
+  height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px;
-  background: var(--ion-color-light);
-  border-radius: 12px;
+  margin-bottom: 30px;
+}
 
+/* ONDA DE RADAR (RIPPLE) */
+.ripple-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid var(--ion-color-secondary);
+  opacity: 0;
+  transform: scale(0.8);
+
+  &.animating {
+    animation: ripple 1.5s infinite cubic-bezier(0, 0.2, 0.8, 1);
+  }
+}
+
+@keyframes ripple {
+  0% { transform: scale(0.8); opacity: 0.8; border-width: 4px; }
+  100% { transform: scale(1.6); opacity: 0; border-width: 0px; }
+}
+
+/* EL BOTÓN FÍSICO */
+.power-button {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: none;
+  /* Degradado sutil para efecto 3D */
+  background: linear-gradient(145deg, var(--ion-color-primary-tint), var(--ion-color-primary));
+
+  /* Sombras complejas para realismo */
+  box-shadow:
+    0 15px 35px rgba(10, 31, 68, 0.4), /* Sombra larga */
+    inset 0 4px 4px rgba(255,255,255,0.2), /* Brillo superior */
+    inset 0 -4px 4px rgba(0,0,0,0.2); /* Sombra interna inferior */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+
+  /* Icono Power */
   ion-icon {
-    font-size: 20px;
-    color: var(--ion-color-primary);
-    flex-shrink: 0;
+    font-size: 80px;
+    color: white;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
   }
 
-  p {
-    margin: 0;
-    font-size: 13px;
-    color: var(--ion-color-medium);
-    font-weight: 500;
-    line-height: 1.4;
+  ion-spinner {
+    transform: scale(2);
   }
-}
 
-// Animaciones
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(1);
+  /* Efecto al presionar (Hundirse) */
+  &:active {
+    transform: scale(0.95);
+    box-shadow: 0 5px 15px rgba(10, 31, 68, 0.4);
   }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.1);
+
+  /* Estado Activo (Enviando señal) */
+  &.active {
+    background: var(--ion-color-secondary); /* Se pone Cian */
+    box-shadow: 0 0 40px var(--ion-color-secondary); /* Resplandor intenso */
   }
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* TEXTOS FINALES */
+.action-text {
+  color: var(--ion-color-primary);
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
 }
 
-.door-header {
-  animation: fadeInUp 0.6s ease-out;
-}
+.instruction-text {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 
-.main-card {
-  animation: fadeInUp 0.7s ease-out;
-  animation-delay: 0.1s;
-  animation-fill-mode: backwards;
-}
-
-// Responsive
-@media (max-width: 576px) {
-  .door-header {
-    padding: 50px 16px 30px;
-
-    .lock-icon-container {
-      width: 100px;
-      height: 100px;
-    }
-
-    .lock-icon {
-      font-size: 56px;
-    }
-
-    h1 {
-      font-size: 26px;
-    }
-
-    p {
-      font-size: 14px;
-    }
-  }
-
-  .main-card {
-    margin: 16px 8px;
-
-    ion-card-content {
-      padding: 24px 16px;
-    }
-  }
-
-  .open-button {
-    --padding-top: 18px;
-    --padding-bottom: 18px;
-    font-size: 16px;
-  }
-}
-
-@media (min-width: 768px) {
-  .door-header {
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-    border-radius: 24px;
-    margin-top: 20px;
-  }
-
-  .main-card {
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-  }
+  ion-icon { font-size: 14px; }
 }

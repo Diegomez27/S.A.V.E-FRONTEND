@@ -1,1 +1,72 @@
+/* tabs.page.scss */
 
+/* BARRA PRINCIPAL */
+ion-tab-bar {
+  --background: var(--ion-color-primary); /* Fondo Azul Marino */
+  --border: none;
+
+  /* Sombra suave hacia arriba */
+  box-shadow: 0px -5px 20px rgba(0, 0, 0, 0.15);
+
+  height: 65px; /* Un poco más alta para dar aire */
+  padding-bottom: 5px;
+  padding-top: 5px; /* Equilibrio arriba y abajo */
+  display: flex;
+  align-items: center; /* Centrado vertical perfecto */
+}
+
+/* BOTONES INDIVIDUALES */
+ion-tab-button {
+  /* ESTADO INACTIVO */
+  --color: rgba(255, 255, 255, 0.5);
+
+  /* ESTADO ACTIVO */
+  --color-selected: var(--ion-color-secondary);
+
+  background: transparent;
+  transition: all 0.3s ease;
+  position: relative;
+
+  /* Ajuste Fino de Iconos y Texto */
+  ion-icon {
+    font-size: 26px; /* Un pelín más grandes */
+    margin-bottom: 4px; /* Separación justa con el texto */
+    margin-top: 0;
+  }
+
+  ion-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  /* ✨ EFECTO DE SELECCIÓN (CAMBIO DE LUGAR) */
+  /* Movemos la línea ABAJO para dar estabilidad visual */
+  &.tab-selected::after {
+    content: '';
+    position: absolute;
+
+    /* Posición: Abajo del todo */
+    bottom: 5px;
+
+    /* Centrado horizontal */
+    left: 50%;
+    transform: translateX(-50%);
+
+    width: 20px; /* Más corta y elegante (punto de luz) */
+    height: 4px; /* Un poco más gruesa */
+    border-radius: 4px; /* Totalmente redonda (píldora) */
+
+    background: var(--ion-color-secondary); /* Color Cian */
+    box-shadow: 0 0 10px var(--ion-color-secondary); /* Resplandor */
+
+    animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  }
+}
+
+/* Animación de rebote suave */
+@keyframes popIn {
+  0% { transform: translateX(-50%) scale(0); opacity: 0; }
+  100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}

@@ -6,16 +6,13 @@ import {
   IonContent,
   IonButton,
   IonIcon,
-  IonCard,
-  IonCardContent,
-  LoadingController
+  IonSpinner,
 } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
 import {
-  lockOpenOutline,
-  lockClosedOutline,
-  checkmarkCircleOutline,
+  powerOutline,
+  wifiOutline,
   alertCircleOutline
 } from 'ionicons/icons';
 import { AccessService } from '../services/access.service';
@@ -28,38 +25,37 @@ import { AlertService } from '../services/alert.service';
   imports: [
     CommonModule,
     IonHeader,
-    IonToolbar,
     IonTitle,
     IonContent,
-    IonButton,
     IonIcon,
-    IonCard,
-    IonCardContent
+    IonSpinner
   ],
   standalone: true
 })
 export class AbrirPage {
-  isOpening = false;
+  isOpening = false; // Esto controla la animación del botón
 
   constructor(
     private accessService: AccessService,
-    private alertService: AlertService,
-    private loadingController: LoadingController
+    private alertService: AlertService
+    // Eliminamos LoadingController para que no estorbe visualmente
   ) {
     addIcons({
-      lockOpenOutline,
-      lockClosedOutline,
-      checkmarkCircleOutline,
+      powerOutline,
+      wifiOutline,
       alertCircleOutline
     });
   }
 
-  // Confirmar y abrir puerta
+  // 1. Confirmación de seguridad
   async confirmOpenDoor() {
+    // Si ya está en proceso, evitamos doble clic
+    if (this.isOpening) return;
+
     const confirmed = await this.alertService.showConfirmation(
       '¿Abrir puerta?',
-      '¿Deseas abrir la puerta remotamente?',
-      'Sí, abrir',
+      '¿Deseas enviar la señal de apertura?',
+      'SÍ, ABRIR',
       'Cancelar'
     );
 
@@ -68,46 +64,43 @@ export class AbrirPage {
     }
   }
 
-  // Abrir puerta
-  async openDoor() {
-    const loading = await this.loadingController.create({
-      message: 'Abriendo puerta...',
-      spinner: 'crescent',
-      duration: 10000 // timeout de 10 segundos
-    });
-
-    await loading.present();
+  // 2. Lógica de Apertura (Sin Loading que tape la pantalla)
+  openDoor() {
+    // Activamos la animación del botón (Ripple y color Cian)
     this.isOpening = true;
 
     this.accessService.openDoorRemotely().subscribe({
       next: async (response) => {
-        await loading.dismiss();
-        this.isOpening = false;
-
-        await this.alertService.showSuccess(
-          response.message || ' Puerta abierta correctamente',
-          2000
-        );
+        // ÉXITO:
+        // Opcional: Pequeño delay artificial (500ms) para que el usuario alcance a ver la animación bonita
+        setTimeout(async () => {
+          this.isOpening = false; // Detener animación
+          await this.alertService.showSuccess(
+            response.message || '¡Puerta Abierta!',
+            2000
+          );
+        }, 500);
       },
       error: async (error) => {
-        await loading.dismiss();
-        this.isOpening = false;
+        // ERROR:
+        this.isOpening = false; // Detener animación inmediatamente
 
         let errorMessage = 'Error al abrir la puerta';
 
+        // Manejo de errores detallado
         if (error.status === 401) {
-          errorMessage = 'Sesión expirada. Inicia sesión nuevamente';
+          errorMessage = 'Sesión expirada. Inicia sesión nuevamente.';
         } else if (error.status === 403) {
-          errorMessage = 'No tienes permisos para abrir la puerta';
+          errorMessage = 'No tienes permisos para abrir la puerta.';
         } else if (error.status === 0) {
-          errorMessage = 'No se puede conectar al servidor';
+          errorMessage = 'No se puede conectar al servidor. Revisa tu conexión.';
         } else if (error.error?.message) {
           errorMessage = error.error.message;
         }
 
-        await this.alertService.showError('Error de apertura', errorMessage);
+        // Mostramos la alerta solo si falló
+        await this.alertService.showError('Fallo de Apertura', errorMessage);
       }
     });
   }
-
 }

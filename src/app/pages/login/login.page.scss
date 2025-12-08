@@ -1,138 +1,128 @@
+/* login.page.scss */
+
+/* FONDO GENERAL */
 .login-background {
-  --background: #f8fafc;
-  min-height: 100vh;
-  padding: 0;
+  --background: #f4f5f8;
 }
 
+/* CENTRADO */
 .login-vertical-center {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  width: 100vw;
-  padding: 20px 0;
+  padding: 20px;
 }
 
 .login-container {
   width: 100%;
-  max-width: 360px;
-  margin: 0 auto;
+  max-width: 400px;
 }
 
+/* HEADER */
 .login-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 30px;
 
-  h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0 0 8px 0;
+  .login-logo {
+    width: 100px;
+    height: auto;
+    margin-bottom: 10px;
+    filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.1));
   }
 
-  p {
-    color: #64748b;
-    font-size: 1rem;
+  h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--ion-color-primary);
     margin: 0;
   }
 }
 
+/* TARJETA */
 .login-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
-  background: white;
-
-  ion-card-content {
-    padding: 24px;
-  }
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  margin: 0;
+  overflow: visible;
 }
 
-/* Asegurar que el texto dentro de la tarjeta sea siempre legible */
-.login-card,
-.login-card * {
-  color: #111827 !important; /* texto oscuro */
-}
-
-/* Forzar color del input nativo dentro de ion-input */
-.login-card ion-input::part(native),
-.login-card ion-input::part(text) {
-  color: #111827 !important;
-}
-
-/* Placeholder más tenue pero visible */
-.login-card ion-input::part(native)::placeholder {
-  color: #9ca3af !important;
-}
-
-/* Asegurar que los labels flotantes y el texto del item estén en color oscuro */
-.login-card ion-label,
-.login-card ion-item,
-.login-card ion-text {
-  color: #111827 !important;
-}
-
-
-.login-item {
-  --border-radius: 8px;
-  --padding-start: 12px;
-  --inner-padding-end: 12px;
-  margin-bottom: 16px;
-  --border-color: #e2e8f0;
+/* --- AQUÍ ESTÁ LA SOLUCIÓN DEFINITIVA --- */
+.custom-input {
   --background: #ffffff;
+  --padding-start: 10px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 12px;
+  margin-bottom: 5px;
+  transition: all 0.3s ease;
 
-  ion-icon {
-    color: #64748b;
+  /* 1. FORZAMOS EL COLOR DEL ITEM PADRE */
+  --color: #000000 !important;
+  color: #000000 !important;
+
+  /* 2. FORZAMOS EL COLOR DEL ICONO (Para que siempre se vea gris oscuro) */
+  .input-icon {
+    color: #666666 !important; /* Gris oscuro visible */
+    transition: color 0.3s ease;
   }
 
-  &.ion-invalid {
-    --border-color: #ef4444;
-    --border-width: 1px;
+  /* 3. FORZAMOS EL INPUT INTERNO DE IONIC */
+  ion-input {
+    --color: #000000 !important; /* El texto que escribes */
+    --placeholder-color: #888888 !important; /* El texto de ayuda */
+    --placeholder-opacity: 1;
+    color: #000000 !important; /* Respaldo */
+    font-weight: 500;
+  }
+
+  /* ESTADO: CUANDO ESCRIBES (FOCUS) */
+  &.item-has-focus {
+    border-color: var(--ion-color-secondary);
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.25);
+
+    /* El icono se pinta del color de la marca */
+    .input-icon {
+      color: var(--ion-color-primary) !important;
+    }
+  }
+
+  /* ESTADO: ERROR */
+  &.ion-invalid.ion-touched {
+    border-color: var(--ion-color-danger);
+    .input-icon {
+      color: var(--ion-color-danger) !important;
+    }
   }
 }
 
-.error-message {
-  display: block;
-  font-size: 0.875rem;
-  margin: 4px 0 16px 0;
-  padding: 0 12px;
-  color: #ef4444;
+/* MENSAJES DE ERROR */
+.error-container {
+  min-height: 20px;
+  margin-bottom: 15px;
+  padding-left: 5px;
+  ion-text {
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
 }
 
+/* BOTÓN */
 .login-button {
-  --border-radius: 8px;
-  height: 44px;
-  font-weight: 600;
-  font-size: 1rem;
-  margin-top: 20px;
-  --background: #2563eb;
-  --color: white;
-
-  &:hover:not(:disabled) {
-    --background: #1d4ed8;
-  }
-
-  &:disabled {
-    --background: #9ca3af;
-    --color: #6b7280;
-  }
+  margin-top: 10px;
+  height: 50px;
+  font-weight: 700;
+  --background: var(--ion-color-primary);
+  --color: #ffffff; /* Texto blanco forzado */
+  --box-shadow: 0 4px 12px rgba(10, 31, 68, 0.3);
 }
 
 .login-footer {
+  margin-top: 30px;
   text-align: center;
-  margin-top: 24px;
-  color: #64748b;
-  font-size: 0.875rem;
-}
-
-// Responsive
-@media (max-width: 480px) {
-  .login-background {
-    padding: 16px;
-  }
-
-  .login-card ion-card-content {
-    padding: 20px 16px;
+  p {
+    color: #9ca3af;
+    font-size: 0.9rem;
   }
 }

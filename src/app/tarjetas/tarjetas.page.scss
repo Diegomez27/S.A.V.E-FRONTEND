@@ -1,277 +1,200 @@
-// Estados de carga y vacío
-.loading-container {
+/* tarjetas.page.scss */
+
+.cards-background {
+  --background: var(--ion-color-primary);
+  --padding-top: 0;
+}
+
+/* HEADER AZUL CURVO */
+.dashboard-header {
+  background: var(--ion-color-primary);
+  padding: calc(var(--ion-safe-area-top, 0px) + 15px) 15px 25px 15px;
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+  box-shadow: 0 8px 20px rgba(10, 31, 68, 0.15);
+  margin-bottom: 10px;
+}
+
+.header-top {
+  margin-bottom: 15px;
+  padding-left: 5px;
+  .page-title {
+    color: white;
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: 0.5px;
+  }
+}
+
+/* LISTA DE TARJETAS */
+.card-list {
+  background: #f4f5f8;
+  padding: 10px 15px;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  min-height: calc(100vh - 200px);
+}
+
+.sliding-card-wrapper {
+  margin-bottom: 12px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  background: white;
+  overflow: hidden;
+}
+
+.user-card {
+  --background: white;
+  --min-height: 85px;
+  --padding-start: 15px;
+  --inner-padding-end: 15px;
+}
+
+/* CAJA ICONO */
+.card-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(var(--ion-color-secondary-rgb), 0.1);
+  color: var(--ion-color-secondary);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 50vh;
-  gap: 16px;
+  margin-right: 15px;
 
-  ion-spinner {
-    transform: scale(1.5);
-  }
+  ion-icon { font-size: 24px; }
 
-  ion-text {
-    text-align: center;
-    color: var(--ion-color-medium);
+  &.deleted {
+    background: #f1f5f9;
+    color: #94a3b8;
   }
 }
 
-.empty-state {
+/* TEXTOS */
+.card-name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #0a1f44;
+  margin-bottom: 4px;
+}
+
+.card-details {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 50vh;
-  padding: 20px;
-  gap: 16px;
-
-  ion-icon {
-    font-size: 80px;
-  }
-
-  ion-text {
-    text-align: center;
-
-    h3 {
-      margin: 8px 0;
-      font-weight: 600;
-    }
-
-    p {
-      margin: 0;
-      line-height: 1.4;
-    }
-  }
+  gap: 3px;
 }
 
-// ==================== SEGMENT ====================
-ion-segment {
-  padding: 0.5rem;
-
-  ion-segment-button {
-    ion-label {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    ion-badge {
-      margin-left: 0.25rem;
-      font-size: 0.7rem;
-    }
-  }
-}
-
-// Tarjetas en la lista
-ion-item {
-  --inner-padding-end: 16px;
-
-  ion-label {
-    h2 {
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    p {
-      font-size: 0.875rem;
-      color: var(--ion-color-medium);
-      margin: 2px 0;
-
-      &:first-of-type {
-        font-family: 'Courier New', monospace;
-        font-weight: 500;
-      }
-    }
-
-    .deleted-date {
-      font-style: italic;
-      color: var(--ion-color-danger);
-    }
-  }
-
-  ion-badge {
-    font-size: 0.75rem;
-    font-weight: 600;
-  }
-}
-
-// ==================== VALIDACIÓN UID ====================
-.validation-feedback {
+.uid-tag {
+  font-family: 'Consolas', monospace;
+  font-size: 0.85rem;
+  color: #64748b;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 1rem;
-  margin-top: 0.5rem;
-  background: var(--ion-color-light);
-  border-radius: 8px;
-
-  ion-text {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-
-    ion-icon {
-      font-size: 1rem;
-    }
-
-    small {
-      font-size: 0.75rem;
-    }
-  }
-
-  .char-count {
-    font-size: 0.7rem;
-    opacity: 0.7;
-  }
+  gap: 6px;
+  ion-icon { font-size: 14px; opacity: 0.7; }
 }
 
-.hint {
-  display: block;
-  margin: 1rem 0;
-  padding: 0.75rem;
-  background: var(--ion-color-light);
-  border-left: 3px solid var(--ion-color-warning);
-  border-radius: 4px;
-
-  p {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 0;
-    font-size: 0.85rem;
-
-    ion-icon {
-      font-size: 1.1rem;
-      flex-shrink: 0;
-    }
-  }
+.date-tag {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
 }
 
-// Modal para agregar tarjeta
-.modal-content {
-  padding: 16px;
-
-  ion-card {
-    margin: 0;
-    box-shadow: none;
-
-    ion-card-header {
-      padding-bottom: 8px;
-
-      ion-card-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 1.2rem;
-
-        ion-icon {
-          font-size: 24px;
-        }
-      }
-    }
-
-    ion-card-content {
-      padding-top: 8px;
-
-      ion-item {
-        --background: transparent;
-        --inner-padding-end: 0;
-        --padding-start: 0;
-        margin-bottom: 16px;
-        border: 1px solid var(--ion-color-light-shade);
-        border-radius: 8px;
-      }
-
-      .save-button {
-        margin-top: 16px;
-
-        ion-spinner {
-          width: 18px;
-          height: 18px;
-        }
-      }
-    }
-  }
-}
-
-// FAB personalizado
-ion-fab-button {
-  box-shadow: 0 4px 16px rgba(var(--ion-color-primary-rgb), 0.3);
-
-  &[size="small"] {
-    --size: 48px;
-    box-shadow: 0 2px 8px rgba(var(--ion-color-secondary-rgb), 0.3);
-  }
-
-  ion-spinner {
-    width: 20px;
-    height: 20px;
-  }
-}
-
-// ==================== BOTÓN NFC ====================
-.nfc-fab {
-  --box-shadow: 0 4px 16px rgba(var(--ion-color-primary-rgb), 0.4);
-
-  ion-icon {
-    font-size: 28px;
-  }
-
-  &:hover {
-    --box-shadow: 0 6px 20px rgba(var(--ion-color-primary-rgb), 0.5);
-  }
-}
-
-// ==================== MODAL NFC ====================
-.uid-display {
-  font-family: 'Courier New', monospace;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--ion-color-primary);
-  background: var(--ion-color-light);
-  padding: 8px 12px;
+.status-badge {
+  padding: 6px 10px;
   border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.65rem;
+  letter-spacing: 0.5px;
+}
+
+/* ESTADO VACÍO */
+.empty-state {
+  text-align: center;
+  margin-top: 0;
+  padding: 60px 20px 20px 20px;
+  background: #f4f5f8;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  min-height: calc(100vh - 200px);
+
+  .empty-icon-circle {
+    width: 90px;
+    height: 90px;
+    background: #e2e8f0;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    ion-icon { font-size: 45px; color: #94a3b8; }
+  }
+
+  h3 { color: var(--ion-color-primary); font-weight: 700; margin-bottom: 5px; }
+  p { color: #64748b; }
+}
+
+/* BOTONES FAB */
+.glow-fab {
+  --box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4);
+}
+
+.small-fab {
+  margin-bottom: 5px;
+  --box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* --- ESTILOS DEL MODAL (CORREGIDO) --- */
+.modal-content-area {
+  --background: #ffffff; /* Forzar fondo blanco */
+}
+
+.modal-intro {
+  margin-bottom: 20px;
+  text-align: center;
+  p { color: #64748b; font-size: 0.9rem; }
+}
+
+.modal-input {
+  --background: #f8fafc;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #e2e8f0;
+
+  /* Arreglo para textos invisibles */
+  --color: #000000 !important;
+  color: #000000 !important;
+
+  .input-icon {
+    color: #94a3b8;
+    margin-right: 8px;
+  }
+
+  ion-input {
+    --placeholder-color: #94a3b8;
+    --placeholder-opacity: 1;
+  }
+
+  &.item-has-focus {
+    border-color: var(--ion-color-secondary);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.1);
+    .input-icon { color: var(--ion-color-primary); }
+  }
+}
+
+.uid-feedback {
+  margin-bottom: 15px;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding-left: 5px;
+}
+
+.modal-btn {
+  height: 50px;
+  font-weight: 700;
   letter-spacing: 1px;
-  margin-top: 4px;
-}
-
-.create-card-button {
-  margin-top: 16px;
-
-  ion-icon {
-    font-size: 18px;
-  }
-}
-
-// Animaciones
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-ion-item-sliding {
-  animation: fadeInUp 0.3s ease-out;
-}
-
-// Responsive
-@media (max-width: 768px) {
-  .modal-content {
-    padding: 12px;
-  }
-
-  .empty-state {
-    height: 40vh;
-    padding: 16px;
-
-    ion-icon {
-      font-size: 60px;
-    }
-  }
+  --border-radius: 12px;
 }

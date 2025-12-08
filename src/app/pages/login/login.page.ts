@@ -16,7 +16,7 @@ import {
 } from '@ionic/angular/standalone';
 import { AuthService, LoginCredentials } from '../../services/auth.service';
 import { addIcons } from 'ionicons';
-import { lockClosed, person } from 'ionicons/icons';
+import { lockClosedOutline, personOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-login',
@@ -48,7 +48,7 @@ export class LoginPage implements OnInit {
     private router: Router,
     private alertService: AlertService
   ) {
-    addIcons({ lockClosed, person });
+    addIcons({ lockClosedOutline, personOutline });
   }
 
   ngOnInit() {

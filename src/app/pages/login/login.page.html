@@ -1,74 +1,63 @@
 <ion-content [fullscreen]="true" class="login-background">
   <div class="login-vertical-center">
     <div class="login-container">
-    <!-- Header simple -->
-    <div class="login-header">
-      <h1>S.A.V.E</h1>
-    </div>
+      <!-- Header simple -->
+      <div class="login-header">
+        <img src="assets/logo/logo2.png" alt="Logo S.A.V.E" class="login-logo">
+        <h1>S.A.V.E</h1>
+      </div>
 
-    <!-- Login Form -->
-    <ion-card class="login-card">
-      <ion-card-content>
-        <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+      <!-- Login Form -->
+      <ion-card class="login-card">
+        <ion-card-content>
+          <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
 
-          <!-- Username Field -->
-          <ion-item class="login-item" [class.ion-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
-            <ion-icon name="person" slot="start"></ion-icon>
-            <ion-input
-              label="Usuario"
-              label-placement="floating"
-              formControlName="username"
-              type="text"
-              placeholder="Ingresa tu usuario">
-            </ion-input>
-          </ion-item>
+            <ion-item lines="none" class="custom-input"
+              [class.ion-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
+              <ion-icon name="person-outline" slot="start" class="input-icon"></ion-icon>
+              <ion-input label="Usuario" label-placement="floating" formControlName="username" type="text">
+              </ion-input>
+            </ion-item>
 
-          <!-- Username Error -->
-          <ion-text color="danger" class="error-message" *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
-            {{ getErrorMessage('username') }}
-          </ion-text>
+            <div class="error-container">
+              <ion-text color="danger" *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
+                {{ getErrorMessage('username') }}
+              </ion-text>
+            </div>
 
-          <!-- Password Field -->
-          <ion-item class="login-item" [class.ion-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
-            <ion-icon name="lock-closed" slot="start"></ion-icon>
-            <ion-input
-              label="Contraseña"
-              label-placement="floating"
-              formControlName="password"
-              type="password"
-              placeholder="Ingresa tu contraseña">
-            </ion-input>
-          </ion-item>
+            <ion-item lines="none" class="custom-input"
+              [class.ion-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+              <ion-icon name="lock-closed-outline" slot="start" class="input-icon"></ion-icon>
+              <ion-input label="Contraseña" label-placement="floating" formControlName="password" type="password">
+              </ion-input>
+            </ion-item>
 
-          <!-- Password Error -->
-          <ion-text color="danger" class="error-message" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
-            {{ getErrorMessage('password') }}
-          </ion-text>
+            <div class="error-container">
+              <ion-text color="danger" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+                {{ getErrorMessage('password') }}
+              </ion-text>
+            </div>
 
-          <!-- Login Error -->
-          <ion-text color="danger" class="error-message" *ngIf="loginError">
-            {{ loginError }}
-          </ion-text>
+            <div class="error-container" *ngIf="loginError">
+              <ion-text color="danger">
+                {{ loginError }}
+              </ion-text>
+            </div>
 
-          <!-- Login Button -->
-          <ion-button
-            expand="block"
-            type="submit"
-            class="login-button"
-            [disabled]="isLoading || loginForm.invalid">
-            <ion-spinner slot="start" *ngIf="isLoading" name="crescent"></ion-spinner>
-            {{ isLoading ? 'Iniciando...' : 'Iniciar Sesión' }}
-          </ion-button>
+            <ion-button expand="block" type="submit" class="login-button" shape="round"
+              [disabled]="isLoading || loginForm.invalid">
+              <ion-spinner slot="start" *ngIf="isLoading" name="crescent"></ion-spinner>
+              {{ isLoading ? 'Iniciando...' : 'INICIAR SESIÓN' }}
+            </ion-button>
 
-        </form>
-      </ion-card-content>
-    </ion-card>
+          </form>
+        </ion-card-content>
+      </ion-card>
 
-    <!-- Footer simple -->
-    <div class="login-footer">
-      <p>Sistema de Acceso Inteligente</p>
-    </div>
+      <!-- Footer simple -->
+      <div class="login-footer">
+        <p>Sistema de Acceso Inteligente</p>
+      </div>
     </div>
   </div>
 </ion-content>
-
