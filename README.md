@@ -2,20 +2,20 @@
 
 
 
-# 🚪 S.A.V.E. 2.0 - Sistema de Acceso y Verificación Electrónica
+# S.A.V.E. 2.0 - Sistema de Acceso y Verificación Electrónica
 Un sistema inteligente de gestión de acceso que combina hardware RFID/NFC con una aplicación móvil para control de puertas y registro de accesos.
 
-## 📋 Descripción del Proyecto
+## Descripción del Proyecto
 
 S.A.V.E. 2.0 es un sistema completo de control de acceso que permite:
-- ✅ **Autenticación segura** con JWT
-- ✅ **Gestión de tarjetas RFID/NFC** desde app móvil
-- ✅ **Control de acceso remoto** desde teléfono
-- ✅ **Historial completo** de todos los accesos
-- ✅ **Hardware integrado** con ESP32 y lector RFID
-- ✅ **Base de datos PostgreSQL** para persistencia
+- **Autenticación segura** con JWT
+- **Gestión de tarjetas RFID/NFC** desde app móvil
+- **Control de acceso remoto** desde teléfono
+- **Historial completo** de todos los accesos
+- **Hardware integrado** con ESP32 y lector RFID
+- **Base de datos PostgreSQL** para persistencia
 
-## 🏗️ Arquitectura del Sistema
+## Arquitectura del Sistema
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -33,7 +33,7 @@ S.A.V.E. 2.0 es un sistema completo de control de acceso que permite:
 - **Backend (NestJS):** API REST con autenticación JWT y base de datos PostgreSQL
 - **Frontend (Ionic):** App móvil con NFC para gestión de tarjetas
 
-## 🛠️ Tecnologías Utilizadas
+## Tecnologías Utilizadas
 
 ### Backend:
 - **Framework:** NestJS
@@ -49,34 +49,34 @@ S.A.V.E. 2.0 es un sistema completo de control de acceso que permite:
 - **Base de datos:** PostgreSQL 15 Alpine
 - **Puerto:** 3001 (configurable)
 
-## 📡 API Endpoints
+## API Endpoints
 
-### 🔐 Autenticación (`/auth`)
+### Autenticación (`/auth`)
 | Método | Endpoint | Descripción | Autenticación |
 |--------|----------|-------------|---------------|
-| `POST` | `/auth/login` | Iniciar sesión con usuario/contraseña | ❌ Público |
-| `POST` | `/auth/register` | Registrar nuevo usuario (solo admin) | ✅ JWT requerido |
+| `POST` | `/auth/login` | Iniciar sesión con usuario/contraseña | Público |
+| `POST` | `/auth/register` | Registrar nuevo usuario (solo admin) | JWT requerido |
 
-### 🎫 Gestión de Tarjetas (`/cards`)
+### Gestión de Tarjetas (`/cards`)
 | Método | Endpoint | Descripción | Autenticación |
 |--------|----------|-------------|---------------|
-| `GET` | `/cards` | Obtener todas las tarjetas registradas | ✅ JWT requerido |
-| `POST` | `/cards` | Registrar nueva tarjeta RFID/NFC | ✅ JWT requerido |
-| `DELETE` | `/cards/:id` | Eliminar tarjeta por ID | ✅ JWT requerido |
+| `GET` | `/cards` | Obtener todas las tarjetas registradas | JWT requerido |
+| `POST` | `/cards` | Registrar nueva tarjeta RFID/NFC | JWT requerido |
+| `DELETE` | `/cards/:id` | Eliminar tarjeta por ID | JWT requerido |
 
-### 🚪 Control de Acceso (`/access`)
+### Control de Acceso (`/access`)
 | Método | Endpoint | Descripción | Autenticación |
 |--------|----------|-------------|---------------|
-| `POST` | `/access/validate` | Validar acceso RFID (para ESP32) | ❌ Público |
-| `GET` | `/access/history` | Obtener historial de accesos | ✅ JWT requerido |
-| `POST` | `/access/open` | Abrir puerta remotamente | ✅ JWT requerido |
+| `POST` | `/access/validate` | Validar acceso RFID (para ESP32) | Público |
+| `GET` | `/access/history` | Obtener historial de accesos | JWT requerido |
+| `POST` | `/access/open` | Abrir puerta remotamente | JWT requerido |
 
 ## 🚀 Instalación y Configuración
 
 ### Prerrequisitos:
-- ✅ Node.js (v18+)
-- ✅ Docker y Docker Compose
-- ✅ Git
+- Node.js (v18+)
+- Docker y Docker Compose
+- Git
 
 ### 1. Clonar el repositorio:
 ```bash
@@ -112,16 +112,14 @@ curl http://localhost:3001/auth/login \
   -d '{"username":"admin","password":"admin123"}'
 ```
 
-## 👤 Usuario por Defecto
+## Usuario por Defecto
 
 Al iniciar la aplicación por primera vez, se crea automáticamente un usuario administrador:
 
 - **Username:** `admin`
 - **Password:** `admin123`
 
-⚠️ **Importante:** Cambia esta contraseña en producción.
-
-## 📊 Base de Datos
+## Base de Datos
 
 ### Entidades principales:
 
@@ -157,7 +155,7 @@ Al iniciar la aplicación por primera vez, se crea automáticamente un usuario a
 }
 ```
 
-## 🧪 Uso Básico
+## Uso Básico
 
 ### 1. Autenticación:
 ```bash
@@ -201,7 +199,7 @@ curl -X POST http://localhost:3001/access/open \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-## 🔧 Configuración Avanzada
+## Configuración Avanzada
 
 ### Variables de Entorno:
 ```bash
