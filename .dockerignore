@@ -1,0 +1,23 @@
+# Ignorar dependencias locales (se instalarán limpias dentro de Docker)
+node_modules
+
+# Ignorar builds previos
+www
+dist
+out-tsc
+
+# Ignorar carpetas de plataformas móviles (no se usan para la versión Web/Nginx)
+android
+ios
+.gradle
+
+# Ignorar Git y configuración de editor
+.git
+.vscode
+.idea
+.gitignore
+
+# Ignorar archivos de Docker y logs
+Dockerfile
+docker-compose.yaml
+npm-debug.log

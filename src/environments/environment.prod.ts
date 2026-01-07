@@ -1,8 +1,6 @@
 export const environment = {
   production: true,
-  //apiUrl: 'http://192.168.1.74:3001', // oficina
-  apiUrl: 'http://192.168.100.23:3001', // casa
-  // apiUrl: 'http://172.20.10.3:3001', // ip del hotspot de la pi
+  apiUrl: '/api', //ruta relativa
   apiTimeout: 30000,
   cacheTimeout: 300000,
   appVersion: '1.0.0'
